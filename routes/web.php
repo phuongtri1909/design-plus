@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DraftController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +17,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login.index');
+Route::post('/login', [UserController::class, 'login'])->name('login');
+
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('/', [PostController::class, 'index']);
+    Route::get('/logout',[UserController::class,'logout'])->name('logout');
+    Route::post('drafts', [DraftController::class, 'store']);
+    Route::get('drafts', function () {
+        abort(404);
+    });
 });
