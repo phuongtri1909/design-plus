@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('post_images', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
-            $table->text('image');
-            $table->timestamps();
+        Schema::table('posts', function (Blueprint $table) {
+            $table->enum('status_no_approval', [0,1])->default(0)->after('status_get_post');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('post_images');
+        Schema::table('posts', function (Blueprint $table) {
+            $table->dropColumn('status_no_approval');
+        });
     }
 };

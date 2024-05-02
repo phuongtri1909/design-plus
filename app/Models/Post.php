@@ -18,12 +18,17 @@ class Post extends Model
         'status_save_draft',
         'send_approval',
         'status_approval',
-        'status_get_post'
+        'status_get_post',
+        'status_no_approval',
+        'link',
+        'approval_at',
+        'get_post_at'
+
     ];
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class,'user_id');
     }
 
     public function category()

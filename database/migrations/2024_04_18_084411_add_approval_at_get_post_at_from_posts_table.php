@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('post_images', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
-            $table->text('image');
-            $table->timestamps();
+        Schema::table('posts', function (Blueprint $table) {
+            $table->timestamp('approval_at')->nullable();
+            $table->timestamp('get_post_at')->nullable();
         });
     }
 
@@ -24,6 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('post_images');
+        Schema::table('posts', function (Blueprint $table) {
+            $table->dropColumn('approval_at');
+            $table->dropColumn('get_post_at');
+        });
     }
 };

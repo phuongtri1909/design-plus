@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>design plus</title>
+    <link rel="icon" href="{{ asset('path/to/your/favicon.ico') }}" type="image/x-icon">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="{{ asset('bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('fontawesome-free-6.5.1-web/css/all.min.css') }}">
 </head>
@@ -43,9 +45,16 @@
                                 <label for=""><i class="fa-solid fa-xmark fa-xl text-white closed"></i></label>
                             </div>
                             <ul class="d-flex  flex-column align-items-center pt-5 ps-0">
-                                <li><a class="item active" href="#">Phóng viên</a></li>
-                                <li><a class="item" href="#">Phê duyệt</a></li>
-                                <li><a class="item" href="#">Lấy bài</a></li>
+                                <li><a class="item {{ Route::currentRouteName() == 'home' || Route::currentRouteName() == 'posts.allPosts' || Route::currentRouteName() == 'posts.edit' ? 'active' : '' }}" href="{{ route('home') }}">Phóng viên</a></li>
+                                
+                                @if (auth()->user()->role == 1)
+                                    <li><a class="item {{ Route::currentRouteName() == 'approve.index' ? 'active' : '' }}" href="{{ route('approve.index') }}">Phê duyệt</a></li>
+                                @endif
+                               
+                                @if (auth()->user()->role == 2 || auth()->user()->role == 1)
+                                    <li><a class="item {{ Route::currentRouteName() == 'get.posts' ? 'active' : '' }}" href="{{ route('get.posts') }}">Lấy bài</a></li>
+                                @endif
+                               
                                 <li><a class="item" href="#">Hỗ trợ</a></li>
                             </ul>
                         </nav>
@@ -53,9 +62,21 @@
                 </div>
                 <div class="menu-desktop d-none d-md-flex pt-4 justify-content-around">
                     <ul class="d-flex align-items-center no-bullet">
-                        <li><a href="#" class="item text-dark active px-4">Phóng viên</a></li>
-                        <li><a href="#" class="item text-dark px-4">Phê duyệt</a></li>
-                        <li><a href="#" class="item text-dark px-4">Lấy bài</a></li>
+                        <li>
+                            <a href="{{ route('home') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'home' || Route::currentRouteName() == 'posts.allPosts' || Route::currentRouteName() == 'posts.edit' ? 'active' : '' }}">
+                                Phóng viên
+                            </a>
+                        </li>
+                        @if (auth()->user()->role == 1)
+                        <li>
+                            <a href="{{ route('approve.index') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'approve.index' ? 'active' : '' }}">
+                                Phê duyệt
+                            </a>
+                        </li>
+                        @endif
+                        @if (auth()->user()->role == 2 || auth()->user()->role == 1)
+                            <li><a href="{{ route('get.posts') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'get.posts' ? 'active' : '' }}">Lấy bài</a></li>
+                        @endif
                         <li><a href="#" class="item text-dark px-4">Hỗ trợ</a></li>
                     </ul>
                 </div>
@@ -93,11 +114,11 @@
             </div>
         </div>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" ></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
+    <script src="{{ asset('bootstrap/js/@500bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('bootstrap/js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('bootstrap/js/@502bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('bootstrap/js/popper.min.js') }}"></script>
+    <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
     @stack('scripts')
 </body>

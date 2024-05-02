@@ -34,13 +34,9 @@ class DraftController extends Controller
      */
     public function store(Request $request)
     {
+      
         $request->validate([
-            'title' => 'required|string',
-            'category_id' => 'required|integer',
-            'brief_intro' => 'required|string',
-            'content' => 'required|string',
-            "file" => "required|array",
-            "file.*" => "image|mimes:jpeg,png,jpg",
+            'category_id' => 'required|integer|exists:categories,id',
         ]);
 
         DB::beginTransaction();
@@ -49,26 +45,34 @@ class DraftController extends Controller
             $post = Post::where('user_id', auth()->id())
                     ->where('status_save_draft', 1)
                     ->first();
-
+            $slug = Str::slug($request->title);
+            $originalSlug = $slug;
+            $count = 1;
+            while (Post::query()->where('slug', $slug)->exists()) {
+                $slug = "{$originalSlug}-" . $count++;
+            }
             if ($post) {
                 foreach ($post->postImages as $image) {
                     Storage::delete('public/' . $image->image);
                     $image->delete();
                 }
 
-                $post->update($request->all() + ['slug' => Str::slug($request->title)]);
+                $post->update($request->all() + ['slug' => $slug]);
             } else {
-                $post = Post::create($request->all() + ['status_save_draft' => 1, 'user_id' => auth()->id(),'slug' => Str::slug($request->title)]);
+                $post = Post::create($request->all() + ['status_save_draft' => 1, 'user_id' => auth()->id(),'slug' => $slug]);
             }
             
-            foreach ($request->file as $file) {
-                $folderName = date('Y/m');
-                $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $extension = $file->getClientOriginalExtension();
-                $fileName = $originalFileName . '_' . time() . '.' . $extension;
-                $file->storeAs('public/uploads/' . $folderName, $fileName);
-                $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
+            if($request->hasFile('file')) {
+                foreach ($request->file as $file) {
+                    $folderName = date('Y/m');
+                    $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $extension = $file->getClientOriginalExtension();
+                    $fileName = $originalFileName . '_' . time() . '.' . $extension;
+                    $file->storeAs('public/uploads/' . $folderName, $fileName);
+                    $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
+                }
             }
+            
             
             $draft = $post->draft;
             if ($draft) {
