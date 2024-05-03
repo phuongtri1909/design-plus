@@ -14,26 +14,44 @@
             </div> 
             
             <div id="listReporter" class="list-reporter">
-                <div class="classify d-flex justify-content-end mb-4">
-                    <select class="form-select text-center" style="width:150px" name="classify" id="classify">
-                        <option value="" selected disabled>Phân loại</option>
+                <div class="classify row justify-content-end mb-4 mx-0">
+                    <select class="form-select text-center col-6 me-2 mt-2 " style="width:150px" name="classify" id="classify">
+                        <option value="" selected>Phân loại</option>
                         <option value="0">Các bài chưa chuyển</option>
                         <option value="1">Các bài đã chuyển</option>
                         <option value="2">Các bài đã đăng</option>
                         <option value="3">Tất cả</option>
                     </select>
+
+                    <select class="form-select text-center col-6 mt-2" style="width:150px" name="status" id="status">
+                        <option value="" selected>Tình trạng</option>
+                        <option value="1">Bài đã duyệt</option>
+                        <option value="0">Bài chưa duyệt</option>
+                        <option value="2">Bài không đạt</option>
+                    </select>
+
+                    <select class="form-select text-center col-12 mt-2 ms-2" style="width:150px" name="duration" id="duration">
+                        <option value="" selected>Thời gian</option>
+                        <option value="1">Trong tháng này</option>
+                        <option value="3">3 tháng trước</option>
+                        <option value="6">6 tháng trước</option>
+                    </select>
                 </div>
-                @if (session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
+
+                <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title dp-color" id="messageModalLabel">Thông báo</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="messageContent">
+                            <!-- Message will be inserted here -->
+                        </div>
+                      </div>
                     </div>
-                @endif
-                
-                @if (session('error'))
-                    <div class="alert alert-danger">
-                        {{ session('error') }}
-                    </div>
-                @endif
+                </div>
+
                 <div class="table-posts">
                     <table class="table-list-posts table table-striped">
                         <tbody>
@@ -94,28 +112,19 @@
                 </div>
             </div>
         </div>
-
-        <div class="toast align-items-center position-fixed end-0" style="top: 17%" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body toast-success">
-                    Hello, world! This is a toast message.
-                </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
         
         <div class="modal fade" id="Modal-post" tabindex="-1" aria-labelledby="Modal-postLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="Modal-postLabel">Modal title</h5>
+                  <h5 class="modal-title dp-color" id="Modal-postLabel">Modal title</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     Bạn có chắc chắn muốn xóa bài viết này không?
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-primary">Đồng ý</button>
+                  <button type="button" class="btn btn-dp btn-apply">Đồng ý</button>
                 </div>
               </div>
             </div>
@@ -134,7 +143,7 @@
         const modalPost = $('#Modal-post');
         const modalPostBody = modalPost.find('.modal-body');
         const modalPostTitle = modalPost.find('.modal-title');
-        const modalPostPrimaryBtn = modalPost.find('.btn-primary');
+        const modalPostOkBtn = modalPost.find('.btn-apply');
         const reporter = $('#reporter');
         const csrfToken = $('meta[name="csrf-token"]').attr('content');
 
@@ -185,11 +194,22 @@
         }
 
         function handleClassifyChange() {
-            var selectedValue = $(this).val();
-
+            var selectedClassify = $('#classify').val();
+            var selectedStatus = $('#status').val();
+            var selectedDuration = $('#duration').val();
+           
             $.ajax({
-                url: '/classify/' + selectedValue,
-                type: 'GET',
+                url: '/classify',
+                type: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                data: JSON.stringify({
+                    classify: selectedClassify,
+                    status: selectedStatus,
+                    duration: selectedDuration
+                }),
                 success: function(data) {
                     tableListPosts.find('tbody').empty();
                     $('#pagination').empty();
@@ -200,13 +220,23 @@
                     $(document).on('click', '.pagination a', function(event){
                         event.preventDefault(); 
                         var page = $(this).attr('href').split('page=')[1];
-                        var classifyValue = $('#classify').val();
-                        fetch_data(page,classifyValue);
+                        
+                        fetch_data(page,selectedClassify,selectedStatus,selectedDuration);
                     });
                    
-                    function fetch_data(page,classifyValue){
+                    function fetch_data(page,selectedClassify,selectedStatus,selectedDuration){
                         $.ajax({
-                            url:"/classify/"+classifyValue+"?page="+page,
+                            url:"/classify?page="+page,
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            data: JSON.stringify({
+                                classify: selectedClassify,
+                                status: selectedStatus,
+                                duration: selectedDuration
+                            }),
                             success:function(data){
                                 tableListPosts.find('tbody').empty();
                                 $('#pagination').empty();
@@ -269,11 +299,22 @@
                 window.location.href = "{{ route('posts.allPosts') }}";
             });
 
-            $('#classify').change(handleClassifyChange);
+            $('#classify, #status, #duration').change(handleClassifyChange);
 
             $(document).on('click', '.delete-post, .recall-post, .send-post, .resend-post', handlePostActionClick);
 
-            modalPostPrimaryBtn.click(handleModalPrimaryBtnClick);
+            modalPostOkBtn.click(handleModalPrimaryBtnClick);
+        });
+
+        $(document).ready(function() {
+            @if (session('success'))
+                $('#messageContent').text('{{ session('success') }}');
+                $('#messageModal').modal('show');
+            @endif
+            @if (session('error'))
+                $('#messageContent').text('{{ session('error') }}');
+                $('#messageModal').modal('show');
+            @endif
         });
     </script>
 @endpush

@@ -264,22 +264,47 @@ class PostController extends Controller
         return view('pages.page-posts')->with('list_posts', $list_posts);
     }
 
-    public function classify($classify){
+    public function classify(Request $request){
        
         $user = auth()->user();
-        if($classify == '0'){
-            $post_classify = $user->posts()->where('status_save_draft', '0')->Where('send_approval' , '0')->where('status_approval', '0')->where('status_get_post', '0')->orderBy('created_at', 'desc')->paginate(2);
-        }
-        else if($classify == '1'){
-            $post_classify = $user->posts()->where('status_save_draft', '0')->Where('send_approval' , '1')->where('status_approval', '0')->orderBy('created_at', 'desc')->paginate(2);
-        }
-        else if($classify == '2'){
-            $post_classify = $user->posts()->where('status_save_draft', '0')->Where('status_approval', '1')->where('status_get_post', '1')->orderBy('created_at', 'desc')->paginate(2);
-        }
-        else{
-            $post_classify = $user->posts()->where('status_save_draft', '0')->orderBy('created_at', 'desc')->paginate(2);
-        }
-        
+        $classify = $request->classify;
+        $status = $request->status;
+        $duration = $request->duration;
+        $post_classify = $user->posts()->where('status_save_draft', '0')
+        ->when(isset($classify), function ($query) use ($classify) {
+            if($classify == 0){
+                return $query->where(function ($query) {
+                $query->where('send_approval', '0')
+                ->where('status_approval', '0')
+                ->where('status_get_post', '0');
+                })
+                ->orWhere(function ($query) {
+                    $query->where('send_approval', '1')
+                        ->where('status_approval', '2');
+                });
+            }
+            else if($classify == 1){
+                return $query->where('send_approval', '1')->where('status_approval', '0');
+            }
+            else if($classify == 2){
+                return $query->where('status_approval', '1')->where('status_get_post', '1');
+            }
+           
+        })
+        ->when(isset($status), function ($query) use ($status) {
+            return $query->where('send_approval', '!=', '0')->where('status_approval', $status);
+        })
+        ->when($duration, function ($query, $duration) {
+            if ($duration == 1) {
+                return $query->whereMonth('created_at', now()->month)
+                             ->whereYear('created_at', now()->year);
+            } else {
+                return $query->whereBetween('created_at', [now()->subMonths($duration), now()->subMonths($duration - 1)]);
+            }
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(20);
+      
         return response()->json([
             'data' => $post_classify->items(),
             'links' => $post_classify->links('vendor.pagination.custom')->toHtml(),
@@ -287,7 +312,7 @@ class PostController extends Controller
     }
 
     public function approve_index(){
-        $list_posts = Post::where('status_save_draft', '0')->where('send_approval', '1')->orderBy('created_at', 'desc')->paginate(20);
+        $list_posts = Post::where('status_save_draft', '0')->where('send_approval', '1')->orderBy('created_at', 'desc')->paginate(30);
         $reporters = User::where('role', '0')->get();
         return view('pages.page-approve')->with('list_posts', $list_posts)->with('reporters', $reporters);
     }
@@ -328,8 +353,9 @@ class PostController extends Controller
                 }
             }
         }
-        $list_posts = Post::where('status_save_draft', '0')->where('send_approval', '1')->orderBy('created_at', 'desc')->paginate(20);
-        $list_posts->withPath('/approve');
+        $list_posts = Post::with('user')
+        ->where('status_save_draft', '0')->where('send_approval', '1')->orderBy('created_at', 'desc')->paginate(20);
+
         return response()->json([
             'data'    => $list_posts->items(),
             'links' => $list_posts->links('vendor.pagination.custom')->toHtml(),
@@ -436,7 +462,7 @@ class PostController extends Controller
             $list_posts[$index] = $post->load('user');
         }
 
-        $list_posts->withPath('/get-posts');
+      
 
         return response()->json([
             'data' => $list_posts->items(),

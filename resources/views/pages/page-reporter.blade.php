@@ -14,16 +14,21 @@
             </div> 
             <div id="formReporter" class="form-reporter">
                 <div class="form-post">
-                    @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
+
+                    <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title dp-color" id="messageModalLabel">Thông báo</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="messageContent">
+                                <!-- Message will be inserted here -->
+                            </div>
+                          </div>
                         </div>
-                    @endif
-                    @if (session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
-                        </div>
-                    @endif
+                    </div>
+
                     <p class="px-3 text-reporter">Vui lòng tạo bài viết mới của bạn theo yêu cầu bên dưới:</p>
                     <form id="myForm" action="#" method="POST" enctype="multipart/form-data">
                         @csrf
@@ -154,15 +159,6 @@
                 </div> 
             </div> 
         </div>  
-
-        <div class="toast align-items-center position-fixed end-0" style="top: 17%" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body toast-success">
-                    Hello, world! This is a toast message.
-                </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
         
 
     </div>
@@ -185,13 +181,6 @@
             content: $('#content').val(),
             attachments: $('#attachment').prop('files')
         };
-    }
-
-    function showToast(message, type) {
-        toastBody.removeClass('toast-success toast-error toast-warning')
-                  .addClass(`toast-${type}`)
-                  .text(message);
-        $('.toast').toast('show');
     }
 
     function handleReviewClick() {
@@ -285,6 +274,17 @@
             $('#viewAllBtn').click(function() {
                 window.location.href = "{{ route('posts.allPosts') }}";
             });
+    });
+
+    $(document).ready(function() {
+        @if (session('success'))
+            $('#messageContent').text('{{ session('success') }}');
+            $('#messageModal').modal('show');
+        @endif
+        @if (session('error'))
+            $('#messageContent').text('{{ session('error') }}');
+            $('#messageModal').modal('show');
+        @endif
     });
     </script>
 @endpush

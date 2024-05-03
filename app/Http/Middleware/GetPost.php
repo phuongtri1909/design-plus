@@ -16,7 +16,7 @@ class GetPost
     public function handle(Request $request, Closure $next): Response
     {
         $user = auth()->user();
-        if($user->role == 1 || $user->role == 2)
+        if($user->role == 2)
         {
             return $next($request);
         }

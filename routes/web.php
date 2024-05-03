@@ -44,7 +44,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::put('posts/{slug}', [PostController::class, 'update'])->name('posts.update');
 
     Route::get('/file/{path}', [FileController::class,'show'])->where('path', '.*');
-    Route::get('classify/{classify}',[PostController::class,'classify']);
+    Route::post('classify',[PostController::class,'classify']);
 
     Route::delete('posts/{id}', [PostController::class, 'destroy']);
     Route::patch('recall/{id}', [PostController::class, 'recall']);

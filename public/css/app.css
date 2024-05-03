@@ -103,6 +103,10 @@
     color: #f26bac !important;
 }
 
+.btn-dp{
+    background: #f26bac !important;
+}
+
 .no-bullet {
     list-style-type: none;
 }
@@ -357,7 +361,7 @@ footer{
     color: #f26bac;
 }
 
-#page-approve .operation option,#page-approve .filter option, #listReporter #classify option{
+#page-approve .operation option,#page-approve .filter option, #listReporter #classify option , #status option, #duration option{
     text-align: left;
 }  
 

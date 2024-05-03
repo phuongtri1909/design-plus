@@ -51,7 +51,7 @@
                                     <li><a class="item {{ Route::currentRouteName() == 'approve.index' ? 'active' : '' }}" href="{{ route('approve.index') }}">Phê duyệt</a></li>
                                 @endif
                                
-                                @if (auth()->user()->role == 2 || auth()->user()->role == 1)
+                                @if (auth()->user()->role == 2)
                                     <li><a class="item {{ Route::currentRouteName() == 'get.posts' ? 'active' : '' }}" href="{{ route('get.posts') }}">Lấy bài</a></li>
                                 @endif
                                
@@ -74,7 +74,7 @@
                             </a>
                         </li>
                         @endif
-                        @if (auth()->user()->role == 2 || auth()->user()->role == 1)
+                        @if (auth()->user()->role == 2 )
                             <li><a href="{{ route('get.posts') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'get.posts' ? 'active' : '' }}">Lấy bài</a></li>
                         @endif
                         <li><a href="#" class="item text-dark px-4">Hỗ trợ</a></li>

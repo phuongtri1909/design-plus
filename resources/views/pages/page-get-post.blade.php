@@ -86,7 +86,7 @@
             </div>
         </div>
         <div class="modal fade" id="linkModal" tabindex="-1" aria-labelledby="linkModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content" style="background-color: #cccccc ">
                 <div class="modal-header border-bottom-0">
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -129,11 +129,12 @@
                     success: function(data) {
                         let tbody = $('tbody.t-body-get-post');
                         tbody.empty();
-                        $('#pagination').html(data.links);
+                       
                         
                         $.each(data.data, function(index, post) {
                             createBody(post, tbody);
                         });
+                        $('#pagination').html(data.links);
 
                         $(document).on('click', '.pagination a', function(event){
                             event.preventDefault(); 

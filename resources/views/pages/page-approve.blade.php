@@ -82,12 +82,17 @@
             </div>
         </div>
 
-        <div class="toast align-items-center position-fixed end-0" style="top: 17%" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body toast-success">
-                    Hello, world! This is a toast message.
+        <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title dp-color" id="notificationModalLabel">Thông báo</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn thực hiện hành động này không?
+                </div> 
+              </div>
             </div>
         </div>
 
@@ -117,24 +122,50 @@
                         posts: selectedPosts
                     }),
                     success: function(data) {
-                        $('.toast-body').removeClass('toast-success toast-error toast-warning')
-                            .addClass(`toast-success`)
-                            .text(data.message);
-                        $('.toast').toast('show');
+                        $('#notificationModal').modal('show');
+                        $('#notificationModal .modal-body').text(data.message);
+
                     
                         let tbody = $('tbody.t-body-approve');
                         tbody.empty();
-                        $('#pagination').html(data.links);
+                       
                         $.each(data.data, function(index, item) {
-                            createBody(item);
+                            createBody(item,tbody);
                         });
+                        $('#pagination').html(data.links);
+
+                        $(document).on('click', '.pagination a', function(event){
+                            event.preventDefault(); 
+                            var page = $(this).attr('href').split('page=')[1];
+                            fetch_data(page);
+                        });
+                    
+                        function fetch_data(page){
+                            $.ajax({
+                                url:"/approve_list?page="+page,
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                data: JSON.stringify({
+                                    operation: selectedOperation,
+                                    posts: selectedPosts
+                                }),
+                                success:function(data){
+                                    let tbody = $('tbody.t-body-approve');
+                                    tbody.empty();
+                                    $.each(data.data, function(index, item) {
+                                        createBody(item, tbody);
+                                    });
+                                    $('#pagination').html(data.links);
+                                }
+                            });
+                        };
                       
                     },
                     error: function(error) {
-                        $('.toast-body').removeClass('toast-success toast-error toast-warning')
-                            .addClass(`toast-error`)
-                            .text(error.responseJSON.error);
-                        $('.toast').toast('show');
+                        $('#notificationModal .modal-body').text(error.responseJSON.error);
                     }
                 });
             }
@@ -161,10 +192,11 @@
                     success: function(data) {
                         let tbody = $('tbody.t-body-approve');
                         tbody.empty();
-                        $('#pagination').html(data.links);
+                       
                         $.each(data.data, function(index, item) {
                             createBody(item,tbody);
                         });
+                        $('#pagination').html(data.links);
 
                         $(document).on('click', '.pagination a', function(event){
                             event.preventDefault(); 
