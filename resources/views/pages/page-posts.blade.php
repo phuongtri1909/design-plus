@@ -53,62 +53,69 @@
                 </div>
 
                 <div class="table-posts">
-                    <table class="table-list-posts table table-striped">
-                        <tbody>
-                        @php
-                            $index = 0 
-                        @endphp
-                            @foreach ($list_posts as $post)
-                                @php
-                                    $index ++;
-                                @endphp
-                                <tr class="tr-posts">
-                                    <th scope="row">{{ $index }}</th>
-                                    <td class="title">{{ $post->title }}</td>
-                                    <td >
-                                        @if ($post->send_approval == 0 || $post->send_approval == 1 && $post->status_approval == 2 )
-                                            <a href="{{ route('posts.edit', ['slug'=> $post->slug]) }}">Xem & edit</a>
-                                        @elseif($post->send_approval == 1 && $post->status_approval == 1 && $post->status_get_post == 1 || $post->status_approval == 1 && $post->status_get_post == 0 )
-                                        
-                                        @else
-                                            <a href="{{ route('posts.show', ['slug'=> $post->slug]) }}">Xem</a>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($post->send_approval == 0 || $post->send_approval == 1 && $post->status_approval == 2)
-                                            <a class="delete-post" data-id="{{ $post->id }}" data-action="delete" data-bs-toggle="modal" data-bs-target="#Modal-post">Xóa</a>
-                                        @elseif($post->send_approval == 1 && $post->status_approval == 0 && $post->status_get_post == 0)
-                                            <a class="recall-post" data-id="{{ $post->id }}" data-action="recall" data-bs-toggle="modal" data-bs-target="#Modal-post">Thu hồi</a>
-                                        @elseif($post->send_approval == 1 && $post->status_approval == 1 && $post->status_get_post == 0)
-                                            <a href="{{ route('posts.show', ['slug'=> $post->slug]) }}">Đang đăng bài</a>
-                                        @else
-                                            @if ($post->link != null)
-                                                <a href="{{ $post->link }}">Đã đăng</a>
+                   
+                    @if($list_posts->isEmpty())
+                        <div class="alert alert-empty" role="alert">
+                            Không có bài viết nào.
+                        </div>
+                    @else
+                        <table class="table-list-posts table table-striped">
+                            <tbody>
+                            @php
+                                $index = 0 
+                            @endphp
+                                @foreach ($list_posts as $post)
+                                    @php
+                                        $index ++;
+                                    @endphp
+                                    <tr class="tr-posts">
+                                        <th scope="row">{{ $index }}</th>
+                                        <td class="title">{{ $post->title }}</td>
+                                        <td >
+                                            @if ($post->send_approval == 0 || $post->send_approval == 1 && $post->status_approval == 2 )
+                                                <a href="{{ route('posts.edit', ['slug'=> $post->slug]) }}">Xem & edit</a>
+                                            @elseif($post->send_approval == 1 && $post->status_approval == 1 && $post->status_get_post == 1 || $post->status_approval == 1 && $post->status_get_post == 0 )
+                                            
                                             @else
-                                                <a class="no-href">Đã đăng</a>
+                                                <a href="{{ route('posts.show', ['slug'=> $post->slug]) }}">Xem</a>
                                             @endif
-                                            
-                                        @endif
-                                    </td>
-                                    <td> 
-                                        @if ($post->send_approval == 1 && $post->status_approval == 0)
-                                            <a class="no-href">Đang chờ duyệt</a>
-                                        @elseif($post->send_approval == 1 && $post->status_approval == 2)
-                                            <a class="resend-post" data-id="{{ $post->id }}" data-action="resend" data-bs-toggle="modal" data-bs-target="#Modal-post">Chuyển duyệt lại</a>
-                                        @elseif($post->send_approval == 0 && $post->status_approval == 0  && $post->status_get_post == 0)
-                                            <a class="send-post" data-id="{{ $post->id }}" data-action="send" data-bs-toggle="modal" data-bs-target="#Modal-post">Chuyển duyệt</a>
-                                        @else
-                                            
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                  
-                    <div id="pagination">
-                        {{ $list_posts->links('vendor.pagination.custom') }}
-                    </div>
+                                        </td>
+                                        <td>
+                                            @if ($post->send_approval == 0 || $post->send_approval == 1 && $post->status_approval == 2)
+                                                <a class="delete-post" data-id="{{ $post->id }}" data-action="delete" data-bs-toggle="modal" data-bs-target="#Modal-post">Xóa</a>
+                                            @elseif($post->send_approval == 1 && $post->status_approval == 0 && $post->status_get_post == 0)
+                                                <a class="recall-post" data-id="{{ $post->id }}" data-action="recall" data-bs-toggle="modal" data-bs-target="#Modal-post">Thu hồi</a>
+                                            @elseif($post->send_approval == 1 && $post->status_approval == 1 && $post->status_get_post == 0)
+                                                <a href="{{ route('posts.show', ['slug'=> $post->slug]) }}">Đang đăng bài</a>
+                                            @else
+                                                @if ($post->link != null)
+                                                    <a href="{{ $post->link }}">Đã đăng</a>
+                                                @else
+                                                    <a class="no-href">Đã đăng</a>
+                                                @endif
+                                                
+                                            @endif
+                                        </td>
+                                        <td> 
+                                            @if ($post->send_approval == 1 && $post->status_approval == 0)
+                                                <a class="no-href">Đang chờ duyệt</a>
+                                            @elseif($post->send_approval == 1 && $post->status_approval == 2)
+                                                <a class="resend-post" data-id="{{ $post->id }}" data-action="resend" data-bs-toggle="modal" data-bs-target="#Modal-post">Chuyển duyệt lại</a>
+                                            @elseif($post->send_approval == 0 && $post->status_approval == 0  && $post->status_get_post == 0)
+                                                <a class="send-post" data-id="{{ $post->id }}" data-action="send" data-bs-toggle="modal" data-bs-target="#Modal-post">Chuyển duyệt</a>
+                                            @else
+                                                
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    
+                        <div id="pagination">
+                            {{ $list_posts->links('vendor.pagination.custom') }}
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

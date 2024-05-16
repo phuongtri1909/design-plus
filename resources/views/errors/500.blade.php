@@ -1,0 +1,13 @@
+@extends('errors.app')
+
+@section('content')
+    <div id="notfound">
+        <div class="notfound">
+            <div class="notfound-404">
+                <h1>500</h1>
+            </div>
+            <h2>SERVER ERROR</h2>
+            <a href="/"><span class="arrow"></span>Return To Homepage</a>
+        </div>
+    </div>
+@endsection

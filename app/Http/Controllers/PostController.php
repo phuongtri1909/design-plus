@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Category;
+use App\Models\UserGetPost;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use League\CommonMark\Extension\CommonMark\Parser\Inline\BacktickParser;
 
 class PostController extends Controller
 {
@@ -366,7 +368,7 @@ class PostController extends Controller
     public function handleApproveAction(Request $request)
     {
         $request->validate([
-            'action' => 'required|in:approve,notAchieved,post',
+            'action' => 'required|in:approve,notAchieved',
             'post_slug' => 'required|string|exists:posts,slug',
         ],[
             'action.required' => 'Vui lòng chọn thao tác',
@@ -383,16 +385,15 @@ class PostController extends Controller
 
         if (!$post) {
             return back()->withErrors(['error' => 'Bài viết không tồn tại']);
-        }
+        } 
 
         try {
             if ($action == 'approve' && auth()->user()->role == '1'){
                 $post->update(['status_approval' => '1','approval_at' => now()->toDateTimeString()]);
             } elseif ($action == 'notAchieved' && auth()->user()->role == '1') {
-                $post->update(['status_approval' => '2','approval_at' => now()->toDateTimeString()]);
-            }elseif($action == 'post' && auth()->user()->role == '2' || $action == 'post' && auth()->user()->role == '1'){
-                $post->update(['status_get_post' => '1','get_post_at' => now()->toDateTimeString()]);
-            }else{
+                $post->update(['status_approval' => '2','approval_at' => now()->toDateTimeString(),'count_no_approval' => $post->count_no_approval + 1]);
+            }
+            else{
                 return back()->withErrors(['error' => 'Không thể thực hiện thao tác']);
             }
         
@@ -468,6 +469,49 @@ class PostController extends Controller
             'data' => $list_posts->items(),
             'links' => $list_posts->links('vendor.pagination.custom')->toHtml(),
         ]);
+    }
+
+    public function pushPost(Request $request)
+    {
+       
+        $validator = Validator::make($request->all(), [
+            'post_id' => 'required|integer|exists:posts,id',
+            'link' => 'required|url',
+        ],[
+            'post_id.required' => 'Bài viết không tồn tại',
+            'post_id.integer' => 'Bài viết không tồn tại',
+            'post_id.exists' => 'Bài viết không tồn tại',
+            'link.required' => 'Link không được để trống',
+        ]);
+        
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->with('error', $validator->errors()->first());
+        }
+
+        $post = Post::where('id', $request->post_id)->first();
+
+        if($post)
+        {
+            try {
+                if(auth()->user()->role == '2'){
+                    DB::beginTransaction();
+
+                    $post->update(['status_get_post' => '1','get_post_at' => now()->toDateTimeString(),'link' => $request->link]);
+                    UserGetPost::create(['user_id' => auth()->id(),'post_id' => $request->post_id]);
+
+                    DB::commit();
+
+                    return back()->with('success', 'Đăng bài viết thành công');
+                }
+                else{
+                    return back()->with('error', 'Không thể đăng bài viết');
+                }
+            } catch (\Exception $th) {
+                DB::rollback();
+                return back()->with('error', 'Không thể đăng bài viết');
+            }
+        }
+        return back()->with('error', 'Không thể đăng bài viết');
     }
 
     public function saveLink(Request $request){

@@ -55,7 +55,13 @@
                         @foreach ($list_posts as $post)
                             <tr>
                                 <td><input type="checkbox" name="posts[]" value="{{ $post->id }}"></td>
-                                <td>{{ $post->title }} <br> <i>{{ $post->user->full_name }}</i></td>
+                                <td>
+                                    @if($post->count_no_approval != null)
+                                        ({{ $post->count_no_approval }}) 
+                                        - 
+                                    @endif
+                                    
+                                    {{ $post->title }} <br> <i>{{ $post->user->full_name }}</i></td>
                                 <td><a href="{{ route('posts.show', ['slug'=> $post->slug]) }}">Xem bài</a></td>
                                 <td>
                                     @if ($post->status_approval == 0)

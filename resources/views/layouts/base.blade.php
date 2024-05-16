@@ -6,7 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>design plus</title>
-    <link rel="icon" href="{{ asset('path/to/your/favicon.ico') }}" type="image/x-icon">
+   
+    <link rel="icon" href="{{ asset('images/logoCircle.ico') }}" type="image/x-icon">
 
     <link href="{{ asset('bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
@@ -45,39 +46,53 @@
                                 <label for=""><i class="fa-solid fa-xmark fa-xl text-white closed"></i></label>
                             </div>
                             <ul class="d-flex  flex-column align-items-center pt-5 ps-0">
-                                <li><a class="item {{ Route::currentRouteName() == 'home' || Route::currentRouteName() == 'posts.allPosts' || Route::currentRouteName() == 'posts.edit' ? 'active' : '' }}" href="{{ route('home') }}">Phóng viên</a></li>
-                                
+                                @if (auth()->user()->role == 0)
+                                    <li><a class="item {{ Route::currentRouteName() == 'home' || Route::currentRouteName() == 'posts.allPosts' || Route::currentRouteName() == 'posts.edit' ? 'active' : '' }}" href="{{ route('home') }}">Phóng viên</a></li>
+                                @endif
                                 @if (auth()->user()->role == 1)
                                     <li><a class="item {{ Route::currentRouteName() == 'approve.index' ? 'active' : '' }}" href="{{ route('approve.index') }}">Phê duyệt</a></li>
+                                    <li><a href="{{ route('dashboard.index') }}" class="item ">Dashboard</a></li>
                                 @endif
                                
                                 @if (auth()->user()->role == 2)
                                     <li><a class="item {{ Route::currentRouteName() == 'get.posts' ? 'active' : '' }}" href="{{ route('get.posts') }}">Lấy bài</a></li>
+                                    <li><a class="item {{ Route::currentRouteName() == 'dashboard.affiliate' ? 'active' : '' }}" href="{{ route('dashboard.affiliate') }}">Dashboard</a></li>
                                 @endif
-                               
-                                <li><a class="item" href="#">Hỗ trợ</a></li>
+                                @if (auth()->user()->role == 0 )
+                                    <li><a class="item" >Hỗ trợ</a></li>
+                                @endif
                             </ul>
                         </nav>
                     </div>
                 </div>
                 <div class="menu-desktop d-none d-md-flex pt-4 justify-content-around">
                     <ul class="d-flex align-items-center no-bullet">
+                        @if (auth()->user()->role == 0)
                         <li>
                             <a href="{{ route('home') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'home' || Route::currentRouteName() == 'posts.allPosts' || Route::currentRouteName() == 'posts.edit' ? 'active' : '' }}">
                                 Phóng viên
                             </a>
                         </li>
+                        @endif
                         @if (auth()->user()->role == 1)
                         <li>
                             <a href="{{ route('approve.index') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'approve.index' ? 'active' : '' }}">
                                 Phê duyệt
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ route('dashboard.index') }}" class="item text-dark px-4">
+                                Dashboard
+                            </a>
+                        </li>
                         @endif
                         @if (auth()->user()->role == 2 )
                             <li><a href="{{ route('get.posts') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'get.posts' ? 'active' : '' }}">Lấy bài</a></li>
+                            <li><a href="{{ route('dashboard.affiliate') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'dashboard.affiliate' ? 'active' : '' }}">Dashboard</a></li>
                         @endif
-                        <li><a href="#" class="item text-dark px-4">Hỗ trợ</a></li>
+                        @if (auth()->user()->role == 0 )
+                            <li><a class="item text-dark px-4 support">Hỗ trợ</a></li>
+                        @endif
                     </ul>
                 </div>
             </div>
@@ -85,6 +100,7 @@
     </header>
     <main class="container container-dp">
         @yield('content')
+        <a style="background: #ffd6ea" class=" text-dark btn btn-lg btn-lg-square back-to-top"><i class="fas fa-chevron-up"></i></a>
     </main>
     
     <footer class="py-5 ">
@@ -114,6 +130,7 @@
             </div>
         </div>
     </footer>
+    
     <script src="{{ asset('bootstrap/js/@500bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/@502bootstrap.bundle.min.js') }}"></script>
@@ -121,5 +138,31 @@
     <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
     @stack('scripts')
+    <script>
+        $(document).ready(function(){
+            $('.support').click(function(e){
+                e.preventDefault();
+                $('html, body').animate({scrollTop:$(document).height()}, 'slow');
+            });
+
+            checkScroll();
+            $(window).scroll(function(){
+                checkScroll();
+            });
+
+            $('.back-to-top').click(function(e){
+                e.preventDefault();
+                $('html, body').animate({scrollTop:0}, 'slow');
+            });
+
+            function checkScroll() {
+                if ($(window).scrollTop() > 20) {
+                    $('.back-to-top').fadeIn();
+                } else {
+                    $('.back-to-top').fadeOut();
+                }
+            }
+        });
+    </script>
 </body>
 </html>

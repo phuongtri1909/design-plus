@@ -22,8 +22,8 @@ class Post extends Model
         'status_no_approval',
         'link',
         'approval_at',
-        'get_post_at'
-
+        'get_post_at',
+        'count_no_approval'
     ];
 
     public function user()

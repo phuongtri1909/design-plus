@@ -71,9 +71,7 @@
                                 @endif
                                 <td>
                                     @if ($post->status_approval == 1 && $post->status_get_post == 1 && $post->link != null)
-                                        <a href="{{ $post->link }}" class="">Link bài</a><span style="color: #f26bac">|</span><a class="no-href edit-link" data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="{{ $post->id }}" data-post-link="{{ $post->link }}">Edit</a>
-                                    @elseif($post->status_approval == 1 && $post->status_get_post == 1 && $post->link == null)
-                                        <a data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="{{ $post->id }}" class="insert-link">Chèn link</a>
+                                        <a href="{{ $post->link }}" target="_blank"  class="">Link bài</a><span style="color: #f26bac">|</span><a class="no-href edit-link" data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="{{ $post->id }}" data-post-link="{{ $post->link }}">Edit</a>
                                     @endif
                                 </td>
                             </tr>
@@ -193,9 +191,7 @@
 
             let link = '';
             if (post.status_approval == 1 && post.status_get_post == 1 && post.link != null) {
-                link = `<a href="${post.link}" class="">Link bài</a><span style="color: #f26bac">|</span><a class="no-href edit-link" data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="${post.id}" data-post-link="${post.link}">Edit</a>`;
-            } else if (post.status_approval == 1 && post.status_get_post == 1 && post.link == null) {
-                link = `<a data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="${post.id}" class="insert-link">Chèn link</a>`;
+                link = `<a href="${post.link}" target="_blank" class="">Link bài</a><span style="color: #f26bac">|</span><a class="no-href edit-link" data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="${post.id}" data-post-link="${post.link}">Edit</a>`;
             }
 
             let row = `
@@ -212,11 +208,6 @@
         }
 
         $(document).ready(function() {
-            $('body').on('click', '.insert-link', function() {
-                var postId = $(this).data('post-id');
-                console.log(postId);
-                $('#web-link-form').find('input[name="post_id"]').val(postId);
-            });
 
             $('body').on('click', '.edit-link', function() {
                 var postId = $(this).data('post-id');
