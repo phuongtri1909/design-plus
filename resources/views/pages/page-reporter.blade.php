@@ -43,6 +43,23 @@
                                 @enderror
                             </div>
                         </div>
+
+                        <div class="form-group row mb-2">
+                            <div class="col-12">
+                                <select id="post_type" class="form-select @error('post_type') is-invalid @enderror" name="post_type" >
+                                    <option value="" disabled selected>Loại tin</option>
+                                    <option value="new" {{ (old('post_type') ?? $post_draft->post_type ?? '')  == 'new' ? 'selected' : '' }}>viết mới</option>
+                                    <option value="translation" {{ (old('post_type') ?? $post_draft->post_type ?? '')  == 'translation' ? 'selected' : '' }}>Bài dịch</option>
+                                </select>
+
+                                @error('post_type')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
                         <div class="form-group row mb-2">
                             <div class="col-12">
                                 <select id="category_id" class="form-select @error('category_id') is-invalid @enderror" name="category_id" >
@@ -141,8 +158,11 @@
                         </button> 
                     </div> 
                     <div class="modal-body"> 
-                         <span class="span-modal">Thể loại bài viết:</span>
-                         <p class="category-name"></p>
+                        <span class="span-modal">Loại tin:</span>
+                        <p class="post-type"></p>
+                        <hr>
+                        <span class="span-modal">Thể loại bài viết:</span>
+                        <p class="category-name"></p>
                         <hr>
                         <span class="span-modal ">Giới thiệu ngắn:</span>
                         <p class="brief-intro"></p>
@@ -176,6 +196,7 @@
     function getInputValues() {
         return {
             title: $('#title').val(),
+            post_type: $('#post_type').val(),
             category_id: $('#category_id').val(),
             brief_intro: $('#brief_intro').val(),
             content: $('#content').val(),
@@ -186,6 +207,12 @@
     function handleReviewClick() {
         var values = getInputValues();
         $('#GFG .span-modal-title').text(values.title);
+        let postType = values.post_type;
+        if (postType === 'new') {
+            $('#GFG .post-type').text('Bài mới');
+        } else if (postType === 'translation') {
+            $('#GFG .post-type').text('Bài dịch');
+        }
         $('#GFG .category-name').text(values.category_id);
         $('#GFG .brief-intro').text(values.brief_intro);
         $('#GFG .content').text(values.content);
@@ -236,6 +263,7 @@
         let images = {!! json_encode($post_draft->postImages ?? []) !!};
 
         if (images.length > 0) {
+           
             let fetchPromises = images.map(function(image) {
                 return fetch('/file/' + image.image)
                     .then(response => response.blob())
@@ -249,7 +277,11 @@
             });
 
             $.when.apply($, fetchPromises).then(function() {
-                let input = $('input[name="file[]"]');
+                
+            }); 
+        }
+
+        let input = $('input[name="file[]"]');
                 input[0].files = dt.files;
                 $(document).on('click', '.file-delete', function() {
                     let name = $(this).next('span.name').text();
@@ -262,8 +294,6 @@
                     });
                     $('#attachment')[0].files = dt.files;
                 });
-            }); 
-        }
     });
     
     $(document).ready(function() {

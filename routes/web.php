@@ -1,14 +1,13 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\Admin;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DraftController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Middleware\Admin;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,9 +19,6 @@ use App\Http\Middleware\Admin;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-
-
 
 
 Route::group(['middleware' => 'guest'], function () {

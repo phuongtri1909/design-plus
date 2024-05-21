@@ -18,9 +18,14 @@
                 </div>
             </div>
 
+            <div class="d-flex justify-content-between mb-5">
+                <p class="mb-0">Thể loại: {{ $post->category->name }}</p>
+                <p class="mb-0">Loại tin: {{ $post->post_type }}</p>
+            </div>
             <div class="row mb-4">
                 <h5 class="col-12 col-md-9">{{ $post->title }}</h5>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-3 px-0" style="text-align: right;
+                padding-right: 13px !important;">
                     @if ($post->status_approval == 0 && auth()->user()->role == 1 || auth()->user()->role == 2 && $post->status_approval == 1 || auth()->user()->role == 1)
                         <form action="{{ route('approve.handleApproveAction') }}" method="POST">
                             @csrf
@@ -60,8 +65,19 @@
                     @endif
                 </div>
             </div>
+
             <p class="fw-bold fst-italic mb-4">{{ $post->brief_intro }}</p>
             <p class="mb-5">{{ $post->content }}</p>
+
+            <div id="gallery" class="row" style="    border-radius: 12px;
+            background: #ece7e7;">
+                @foreach($PostImages as $image)
+                    <div class="col-md-4 col-sm-6 mb-4 gallery-item">
+                        <img src="{{ asset('storage/' . $image->image) }}" class="img-fluid" alt="Image">
+                    </div>
+                @endforeach
+            </div>
+
             <div class="d-flex justify-content-between mb-5">
                 <p class="mb-0">Tác giả: {{ $post->user->full_name }}</p>
                 <p class="mb-0">Ngày đăng: {{ $post->created_at }}</p>
@@ -109,6 +125,7 @@
 @endsection
 @push('scripts')
     <script>
+
         $('body').on('click', '.insert-link', function() {
             var postId = $(this).data('post-id');
             $('#link-form').find('input[name="post_id"]').val(postId);

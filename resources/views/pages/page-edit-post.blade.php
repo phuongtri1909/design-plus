@@ -5,16 +5,20 @@
         <div class="container">
             <div id="form-edit-post" class="form-edit-post">
                 <div class="form-post">
-                    @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
+
+                    <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title dp-color" id="messageModalLabel">Thông báo</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="messageContent">
+                                <!-- Message will be inserted here -->
+                            </div>
+                          </div>
                         </div>
-                    @endif
-                    @if (session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
-                        </div>
-                    @endif
+                    </div>
                    
                     <p class="px-3 pt-5 text-reporter">Chỉnh sửa bài viết này:</p>
                     <form id="form-edit" action="{{ route('posts.update',['slug'=> $post->slug]) }}" method="POST" enctype="multipart/form-data">
@@ -31,6 +35,23 @@
                                 @enderror
                             </div>
                         </div>
+
+                        <div class="form-group row mb-2">
+                            <div class="col-12">
+                                <select id="post_type" class="form-select @error('post_type') is-invalid @enderror" name="post_type" >
+                                    <option value="" disabled selected>Loại tin</option>
+                                    <option value="new" {{ (old('post_type') ?? $post->post_type ?? '')  == 'new' ? 'selected' : '' }}>viết mới</option>
+                                    <option value="translation" {{ (old('post_type') ?? $post->post_type ?? '')  == 'translation' ? 'selected' : '' }}>Bài dịch</option>
+                                </select>
+
+                                @error('post_type')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
                         <div class="form-group row mb-2">
                             <div class="col-12">
                                 <select id="category_id" class="form-select @error('category_id') is-invalid @enderror" name="category_id" >
@@ -153,6 +174,7 @@
                     let input = $('input[name="file[]"]');
                     input[0].files = dt.files;
                     $(document).on('click', '.file-delete', function() {
+                        console.log("aa");
                         let name = $(this).next('span.name').text();
                         $(this).closest('.file-block').remove();
                         $.each(dt.items, function(i, item){
@@ -165,6 +187,17 @@
                     });
                 }); 
             }
+        });
+
+        $(document).ready(function() {
+            @if (session('success'))
+                $('#messageContent').text('{{ session('success') }}');
+                $('#messageModal').modal('show');
+            @endif
+            @if (session('error'))
+                $('#messageContent').text('{{ session('error') }}');
+                $('#messageModal').modal('show');
+            @endif
         });
     </script>
 @endpush

@@ -19,9 +19,11 @@ class UserController extends Controller
             if ($role == '0') {
                 return redirect('/');
             } elseif ($role == '1') {
-                return redirect('/approve');
+                return redirect('/dashboard');
             } elseif ($role == '2') {
                 return redirect('/get-posts');
+            }elseif ($role == '3') {
+                return redirect('/approve');
             }
         }
         return back()->withErrors([

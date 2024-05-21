@@ -41,25 +41,28 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string',
-            'category_id' => 'required|integer|exists:categories,id',
-            'brief_intro' => 'required|string',
-            'content' => 'required|string',
-            "file" => "required|array",
-            "file.*" => "image|mimes:jpeg,png,jpg",
+            'title'         => 'required|string',
+            'post_type'     => 'required|in:new,translation',
+            'category_id'   => 'required|integer|exists:categories,id',
+            'brief_intro'   => 'required|string',
+            'content'       => 'required|string',
+            "file"          => "required|array",
+            "file.*"        => "image|mimes:jpeg,png,jpg",
         ],[
-            'title.required' => 'Tựa đề không được để trống',
-            'title.string' => 'Tựa đề phải là chuỗi ký tự',
-            'category_id.required' => 'Bạn chưa chọn thể loại',
-            'category_id.integer' => 'Thể loại phải là số nguyên',
-            'category_id.exists' => 'Thể loại không tồn tại',
-            'brief_intro.required' => 'Mô tả ngắn không được để trống',
-            'brief_intro.string' => 'Mô tả ngắn phải là chuỗi ký tự',
-            'content.required' => 'Nội dung không được để trống',
-            'content.string' => 'Nội dung phải là chuỗi ký',
-            'file.required' => 'Ảnh không được để trống',
-            'file.*.image' => 'File không đúng định dạng ảnh',
-            'file.*.mimes' => 'File không đúng định dạng ảnh',
+            'title.required'        => 'Tựa đề không được để trống',
+            'title.string'          => 'Tựa đề phải là chuỗi ký tự',
+            'post_type.required'    => 'Loại tin không được để trống',
+            'post_type.in'          => 'Loại bài viết không hợp lệ',
+            'category_id.required'  => 'Bạn chưa chọn thể loại',
+            'category_id.integer'   => 'Thể loại phải là số nguyên',
+            'category_id.exists'    => 'Thể loại không tồn tại',
+            'brief_intro.required'  => 'Mô tả ngắn không được để trống',
+            'brief_intro.string'    => 'Mô tả ngắn phải là chuỗi ký tự',
+            'content.required'      => 'Nội dung không được để trống',
+            'content.string'        => 'Nội dung phải là chuỗi ký',
+            'file.required'         => 'Ảnh không được để trống',
+            'file.*.image'          => 'File không đúng định dạng ảnh',
+            'file.*.mimes'          => 'File không đúng định dạng ảnh',
         ]);
 
         DB::beginTransaction();
@@ -95,6 +98,7 @@ class PostController extends Controller
                     $extension = $file->getClientOriginalExtension();
                     $fileName = $originalFileName . '_' . time() . '.' . $extension;
                     $file->storeAs('public/uploads/' . $folderName, $fileName);
+                    $file->move(public_path('storage/uploads/' . $folderName), $fileName);
                     $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
                 }
             }
@@ -114,15 +118,22 @@ class PostController extends Controller
     public function show($slug)
     {
         $user = auth()->user();
-        if($user->role == '1' || $user->role == '2'){
-            $post = Post::where('slug', $slug)->first();
-        }else{
-            $post = $user->posts()->where('slug', $slug)->first();
-        }
-        if(!$post){
+        $postQuery = $user->role == '1' || $user->role == '2' ? Post::query() : $user->posts();
+
+        $post = $postQuery->where('slug', $slug)->first();
+
+        if (!$post) {
             return back()->with('error', 'Không tìm thấy bài viết');
         }
-        return view('pages.page-post')->with('post', $post);
+
+        $postTypeMapping = [
+            'translation' => 'Bài dịch',
+            'new' => 'Bài viết mới',
+        ];
+
+        $post->post_type = $postTypeMapping[$post->post_type] ?? $post->post_type;
+        $PostImages = $post->postImages;
+        return view('pages.page-post')->with('post', $post)->with('PostImages', $PostImages);
     }
 
     /**
@@ -146,6 +157,7 @@ class PostController extends Controller
     {   
         $request->validate([
             'title' => 'required|string',
+            'post_type' => 'required|in:new,translation',
             'category_id' => 'required|integer|exists:categories,id',
             'brief_intro' => 'required|string',
             'content' => 'required|string',
@@ -154,6 +166,8 @@ class PostController extends Controller
         ],[
             'title.required' => 'Tựa đề không được để trống',
             'title.string' => 'Tựa đề phải là chuỗi ký tự',
+            'post_type.required' => 'Loại tin không được để trống',
+            'post_type.in' => 'Loại tin không hợp lệ',
             'category_id.required' => 'Bạn chưa chọn thể loại',
             'category_id.integer' => 'Thể loại phải là số nguyên',
             'category_id.exists' => 'Thể loại không tồn tại',
@@ -183,6 +197,7 @@ class PostController extends Controller
                         $extension = $file->getClientOriginalExtension();
                         $fileName = $originalFileName . '_' . time() . '.' . $extension;
                         $file->storeAs('public/uploads/' . $folderName, $fileName);
+                        $file->move(public_path('storage/uploads/' . $folderName), $fileName);
                         $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
                     }
                 }

@@ -137,6 +137,7 @@
     <script src="{{ asset('bootstrap/js/popper.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
+    @vite('resources/js/app.js')
     @stack('scripts')
     <script>
         $(document).ready(function(){

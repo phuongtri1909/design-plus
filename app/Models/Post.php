@@ -23,7 +23,8 @@ class Post extends Model
         'link',
         'approval_at',
         'get_post_at',
-        'count_no_approval'
+        'count_no_approval',
+        'post_type'
     ];
 
     public function user()
@@ -45,4 +46,5 @@ class Post extends Model
     {
         return $this->hasOne(Draft::class);
     }
+    
 }

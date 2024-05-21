@@ -37,6 +37,7 @@ class DraftController extends Controller
       
         $request->validate([
             'category_id' => 'required|integer|exists:categories,id',
+            'post_type'   => 'nullable|in:new,translation',
         ]);
 
         DB::beginTransaction();
