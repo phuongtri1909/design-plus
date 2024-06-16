@@ -384,7 +384,7 @@ class PostController extends Controller
             }
         }
         $list_posts = Post::with('user')
-        ->where('status_save_draft', '0')->where('send_approval', '1')->orderBy('created_at', 'desc')->paginate(20);
+        ->where('status_save_draft', '0')->where('send_approval', '1')->orderBy('created_at', 'desc')->paginate(30);
 
         return response()->json([
             'data'    => $list_posts->items(),
@@ -455,7 +455,7 @@ class PostController extends Controller
             }
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(20);
+        ->paginate(30);
        
         return response()->json([
             'data' => $list_posts->items(),
