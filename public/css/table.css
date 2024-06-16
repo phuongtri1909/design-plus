@@ -42,6 +42,17 @@
     display: inline-block;
     transition: all 0.3s ease 0s;
 }
+
+.panel .panel-heading .input-date{
+    width:100% !important;
+}
+@media (min-width:768px)
+{
+    .panel .panel-heading .form-control{
+        width: 40% !important;
+    }
+}
+
 .panel .panel-heading .form-control:focus{
     background-color: rgba(255,255,255,0.2);
     box-shadow: none;
@@ -156,6 +167,7 @@
 .pagination li:last-child a{
     border-radius: 50%;
 }
+
 @media only screen and (max-width:767px){
     .panel .panel-heading .title{
         text-align: center;

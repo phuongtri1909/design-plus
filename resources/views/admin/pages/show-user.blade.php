@@ -15,10 +15,9 @@
                             </div>
                             <div class="infomation mx-5">
                                 <p class="text-dark"><span class="font-weight-bold">Tài khoản:</span> {{ $user->username }}</p>
-                                <p class="text-dark"><Span class="font-weight-bold">Tổng bài:</Span> {{ $user->total_posts }}</p>
-                                <p class="text-dark"><Span class="font-weight-bold">Chưa duyệt:</Span> {{ $user->count_no_approval }}</p>
-                                <p class="text-dark"><Span class="font-weight-bold">Đã duyệt:</Span> {{ $user->count_approval }}</p>
-                                <p class="text-dark"><Span class="font-weight-bold">Đã đăng:</Span> {{ $user->count_push_post }}</p>
+                                <a class="text-dark link-custom" href="{{ route('reporter.report', ['id' => $user->id, 'report' => 'up']) }}"><p class="text-dark"><Span class="font-weight-bold">Đã up lên:</Span> {{ $user->count_send_approval }}</p></a>
+                                <a class="text-dark link-custom" href="{{ route('reporter.report', ['id' => $user->id, 'report' => 'approval']) }}"><p class="text-dark"><Span class="font-weight-bold">Đã duyệt:</Span> {{ $user->count_approval }}</p></a>
+                                <a class="text-dark link-custom" href="{{ route('reporter.report', ['id' => $user->id, 'report' => 'post']) }}"><p class="text-dark"><Span class="font-weight-bold">Đã đăng:</Span> {{ $user->count_push_post }}</p></a>
                                 <p class="text-dark"><Span class="font-weight-bold">Ngày đăng ký:</Span> {{ $user->created_at }}</p>
                                 <p class="text-dark"><Span class="font-weight-bold">Ngày cập nhật:</Span> {{ $user->updated_at }}</p>
                                 <p class="text-dark"><Span class="font-weight-bold">Trạng thái:</Span> 

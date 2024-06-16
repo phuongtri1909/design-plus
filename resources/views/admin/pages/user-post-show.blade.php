@@ -4,23 +4,9 @@
         border-radius: 10px !important;
     }
 
-    ul.list-style-none li {
-        list-style: none;
-    }
-
-    ul.list-style-none li a {
-        color: #f26bac;
-        padding: 8px 0px;
-        display: block;
-        text-decoration: none;
-    }
-
-    .m-t-5 {
-        margin-top: 5px;
-    }
-
-    .w-30px {
-        width: 30px;
+    .limiter {
+        width: 100%;
+        margin: 0 auto;
     }
 </style>
 @section('content')
@@ -37,10 +23,13 @@
                             <div class="card-body text-center">
                                 <h4 class="card-title m-b-0">Thông tin người lấy bài: {{ $user->full_name }}</h4>
                             </div>
-                            <div class="infomation mx-5">
-                                <p class="text-dark"><span class="font-weight-bold">Tài khoản:</span> {{ $user->username }}</p>
-                                <p class="text-dark"><Span class="font-weight-bold">Ngày đăng ký:</Span> {{ $user->created_at }}</p>
-                                <p class="text-dark"><Span class="font-weight-bold">Ngày cập nhật:</Span> {{ $user->updated_at }}
+                            <div class="infomation mx-1 mx-md-5">
+                                <p class="text-dark"><span class="font-weight-bold">Tài khoản:</span> {{ $user->username }}
+                                </p>
+                                <p class="text-dark"><Span class="font-weight-bold">Ngày đăng ký:</Span>
+                                    {{ $user->created_at }}</p>
+                                <p class="text-dark"><Span class="font-weight-bold">Ngày cập nhật:</Span>
+                                    {{ $user->updated_at }}
                                 </p>
                                 <p class="text-dark"><Span class="font-weight-bold">Trạng thái:</Span>
                                     @if ($user->status == 'active')
@@ -49,69 +38,129 @@
                                         <span class="badge badge-danger">inactive</span>
                                     @endif
                                 </p>
-        
+
                             </div>
                         </div>
                     </div>
 
-                    
+
                     <hr>
                     <div class="panel-heading">
-                        <div class=" mt-3">   
+                        <div class=" mt-3">
                             <div class="card">
-                                <div class="card-body text-center">
-                                    <h4 class="card-title m-b-0">Danh sách các bài đã lấy</h4>
-                                </div>
-                                <ul class="list-style-none pl-0 pl-md-5">
-
-                                    @foreach ($user->get_posts as $get_post)
-                                        <li class="d-flex no-block card-body">
-                                            <i class="fa fa-check-circle w-30px m-t-5 text-success"></i>
-                                            <div>
-                                                <a href="{{ route('posts.show',$get_post->post->slug) }}" class="m-b-0 font-medium p-0" data-abc="true">{{ $get_post->post->title }}</a>
-                                                <span class="text-muted">Tác giả: {{ $get_post->post->user->full_name }}</span>
-                                            </div>
-                                            <div class="ml-auto">
-                                                <div class="tetx-right">
-                                                    @php
-                                                        $now = \Carbon\Carbon::now();
-                                                        $created_at = $get_post->created_at;
-                                                        $minutes = $created_at->diffInMinutes($now);
-                                                        $hours = $created_at->diffInHours($now);
-                                                        $days = $created_at->diffInDays($now);
-                                                        $weeks = $created_at->diffInWeeks($now);
-                                                        $months = $created_at->diffInMonths($now);
-                                                        $years = $created_at->diffInYears($now);
-                                                    @endphp
-                                                    @if($years >= 1)
-                                                        <h6 class="text-muted m-b-0">{{ $years }} năm trước</h6>
-                                                    @elseif($months >= 1)
-                                                        <h6 class="text-muted m-b-0">{{ $months }} tháng trước</h6>
-                                                    @elseif($weeks >= 1)
-                                                        <h6 class="text-muted m-b-0">{{ $weeks }} tuần trước</h6>
-                                                    @elseif($days >= 1)
-                                                        <h6 class="text-muted m-b-0">{{ $days }} ngày trước</h6>
-                                                    @elseif($hours >= 1)
-                                                        <h6 class="text-muted m-b-0">{{ $hours }} giờ trước</h6>
-                                                    @else
-                                                        <h6 class="text-muted m-b-0">{{ $minutes }} phút trước</h6>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </li>
-                                    @endforeach
-                                </ul>
-
-                                <div id="pagination">
-                                    {{ $user->get_posts->links('vendor.pagination.custom') }}
+                                <div class="card-body text-center pb-0">
+                                    <h3 class="card-title m-b-0 font-weight-bold">Báo Cáo</h3>
                                 </div>
 
-                            </div>     
+                                <div class="mx-1 mx-md-5 text-center">
+                                    <input class="form-control input-date" type="text" name="daterange"
+                                        value="{{ now()->startOfMonth()->format('m/d/Y') }} - {{ now()->endOfMonth()->format('m/d/Y') }}" />
+                                    <div class="limiter  mt-3">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">Số lượng</th>
+                                                    <th class="text-center">Chi tiết</th>
+                                                    <th>Xem bài</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="reporter-body">
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title dp-color" id="messageModalLabel">Thông báo</h5>
+            
+            </div>
+            <div class="modal-body" id="messageContent">
+                
+            </div>
+        </div>
+        </div>
+    </div>
 @endsection
+@push('script-admin')
+    <script>
+        $(document).ready(function() {
+            function fetchData(start, end) {
+                $.ajax({
+                    url: "{{ route('report.user.getPosts') }}",
+                    method: 'POST',
+                    data: {
+                        user_id: "{{ $user->id }}",
+                        start: start.format('YYYY-MM-DD 00:00:00'),
+                        end: end.format('YYYY-MM-DD 23:59:59'),
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(results) {
+                        console.log(results);
+                        if(results.error){
+                            $('#messageModal').modal('show');
+                            $('#messageContent').text(results.error);
+                        }else{
+                            var $tbody = $(".reporter-body");
+                            $tbody.empty();
+    
+    
+                            var $row = $("<tr></tr>");
+                            $row.append($("<td class='text-center'></td>").text(results.totalPosts));
+    
+                            var $postsCell = $("<td></td>");
+                            var $postView = $("<td></td>");
+                            results.totalRecords.forEach(function(reporter) {
+                                $postsCell.append($("<p></p>").html(
+                                    "<span class='font-weight-bold'>" + reporter.reporter_name +
+                                    ": </span>" + reporter.count + " bài"));
+                                var modalId = "messageModal" + reporter.reporter_id;
+                                var modal = $('<div class="modal fade" id="' + modalId + '" tabindex="-1" aria-labelledby="' + modalId + 'Label" aria-hidden="true">' +
+                                    '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">' +
+                                        '<div class="modal-content">' +
+                                        '<div class="modal-header">' +
+                                            '<h5 class="modal-title dp-color" id="' + modalId + 'Label">Thông báo</h5>' +
+                                        '</div>' +
+                                        '<div class="modal-body" id="' + modalId + 'Content">' +
+                                        '</div>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '</div>').appendTo('body');
+                                reporter.posts_links.forEach(function(link) {
+                                    $('#' + modalId + 'Content').append($('<ul></ul>').append($('<li></li>').html('<a class="text-dark link-custom" href="' + link.link + '">' + link.title + '</a>')));
+                                });
+                                $postView.append($('<p class="link-custom" data-bs-toggle="modal" data-bs-target="#' + modalId +'"></p>').html('Xem'));
+                            });
+
+                            
+                            $row.append($postsCell);
+                            $row.append($postView);
+                            $tbody.append($row);
+                        }
+                    }
+                });
+            }
+
+
+            $('input[name="daterange"]').daterangepicker({
+                opens: 'left'
+            }, function(start, end, label) {
+                fetchData(start, end);
+            });
+
+            var start = moment().startOf('month');
+            var end = moment().endOf('month');
+            fetchData(start, end);
+            
+        });
+    </script>
+@endpush

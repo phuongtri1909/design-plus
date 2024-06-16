@@ -42,16 +42,40 @@
                         <input type="checkbox" id="drawer-toggle" name="drawer-toggle"/>
                         <label for="drawer-toggle" id="drawer-toggle-label" class=""><i class="fa-solid fa-bars fa-xl"></i></label>
                         <nav id="drawer">
-                            <div class="text-end">
-                                <label for=""><i class="fa-solid fa-xmark fa-xl text-white closed"></i></label>
+                            <div class="row">
+                                <div class=" dropdown col-6">
+                                    <div class="nav-link dropdown-toggle text-light btn-login" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        
+                                        @if (auth()->check())
+                                            {{ auth()->user()->full_name }}
+                                        @else  
+                                            Tài khoản
+                                        @endif
+                                    </div>
+                                    <ul class="dropdown-menu">
+                                        @if (auth()->check())
+                                            <li><a class="dropdown-item text-dark" href="{{ route('logout') }}">Đăng xuất</a></li>
+                                        @else
+                                            <li><a class="dropdown-item text-dark" href="{{ route('login') }}">Đăng nhập</a></li>
+                                        @endif
+                                    </ul>
+                                </div>
+                                <div class="text-end col-6">
+                                    <label for=""><i class="fa-solid fa-xmark fa-xl text-white closed"></i></label>
+                                </div>
                             </div>
                             <ul class="d-flex  flex-column align-items-center pt-5 ps-0">
                                 @if (auth()->user()->role == 0)
                                     <li><a class="item {{ Route::currentRouteName() == 'home' || Route::currentRouteName() == 'posts.allPosts' || Route::currentRouteName() == 'posts.edit' ? 'active' : '' }}" href="{{ route('home') }}">Phóng viên</a></li>
                                 @endif
-                                @if (auth()->user()->role == 1)
+                                @if (auth()->user()->role == 1 || auth()->user()->role == 3)
                                     <li><a class="item {{ Route::currentRouteName() == 'approve.index' ? 'active' : '' }}" href="{{ route('approve.index') }}">Phê duyệt</a></li>
-                                    <li><a href="{{ route('dashboard.index') }}" class="item ">Dashboard</a></li>
+                                    @if (auth()->user()->role == 1)
+                                        <li><a href="{{ route('dashboard.index') }}" class="item ">Dashboard</a></li>
+                                    @endif
+                                    @if (auth()->user()->role == 3)
+                                        <li><a href="{{ route('dashboard.approver') }}" class="item ">Dashboard</a></li>
+                                    @endif
                                 @endif
                                
                                 @if (auth()->user()->role == 2)
@@ -59,7 +83,7 @@
                                     <li><a class="item {{ Route::currentRouteName() == 'dashboard.affiliate' ? 'active' : '' }}" href="{{ route('dashboard.affiliate') }}">Dashboard</a></li>
                                 @endif
                                 @if (auth()->user()->role == 0 )
-                                    <li><a class="item" >Hỗ trợ</a></li>
+                                    <li><a class="item support" >Hỗ trợ</a></li>
                                 @endif
                             </ul>
                         </nav>
@@ -74,21 +98,27 @@
                             </a>
                         </li>
                         @endif
-                        @if (auth()->user()->role == 1)
+                        @if (auth()->user()->role == 1 || auth()->user()->role == 3)
                         <li>
                             <a href="{{ route('approve.index') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'approve.index' ? 'active' : '' }}">
                                 Phê duyệt
                             </a>
                         </li>
-                        <li>
-                            <a href="{{ route('dashboard.index') }}" class="item text-dark px-4">
-                                Dashboard
-                            </a>
-                        </li>
+                        @if (auth()->user()->role == 1)
+                            <li>
+                                <a href="{{ route('dashboard.index') }}" class="item text-dark px-4">
+                                    Dashboard
+                                </a>
+                            </li>
+                            
+                        @endif
                         @endif
                         @if (auth()->user()->role == 2 )
                             <li><a href="{{ route('get.posts') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'get.posts' ? 'active' : '' }}">Lấy bài</a></li>
                             <li><a href="{{ route('dashboard.affiliate') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'dashboard.affiliate' ? 'active' : '' }}">Dashboard</a></li>
+                        @endif
+                        @if (auth()->user()->role == 3 )
+                            <li><a href="{{ route('dashboard.approver') }}" class="item text-dark px-4 {{ Route::currentRouteName() == 'dashboard.affiliate' ? 'active' : '' }}">Dashboard</a></li>
                         @endif
                         @if (auth()->user()->role == 0 )
                             <li><a class="item text-dark px-4 support">Hỗ trợ</a></li>
@@ -137,7 +167,7 @@
     <script src="{{ asset('bootstrap/js/popper.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
-    @vite('resources/js/app.js')
+    
     @stack('scripts')
     <script>
         $(document).ready(function(){

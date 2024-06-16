@@ -23,8 +23,9 @@
                                     <select id="role" class="text-left form-control input-create @error('role') is-invalid @enderror" name="role" >
                                         <option value="" disabled selected>Loại tài khoản</option>
                                         <option {{ old('role')  == '0' ? 'selected' : '' }} value="0">Phóng viên</option>
-                                        <option {{ old('role')  == '1' ? 'selected' : '' }} value="1">Admin</option>
+                                        <option {{ old('role')  == '3' ? 'selected' : '' }} value="3">Người duyệt bài</option>
                                         <option {{ old('role')  == '2' ? 'selected' : '' }} value="2">Người lấy bài</option>
+                                        <option {{ old('role')  == '1' ? 'selected' : '' }} value="1">Admin</option>
                                        
                                     </select>
     

@@ -67,5 +67,7 @@ class Kernel extends HttpKernel
         'getPost'=>\App\Http\Middleware\GetPost::class,
         'active'=>\App\Http\Middleware\Active::class,
         'roleReporter'=>\App\Http\Middleware\RoleReporter::class,
+        'roleApprover'=>\App\Http\Middleware\RoleApprover::class,
+        'roleAdminApprover'=>\App\Http\Middleware\RoleAdminApprover::class,
     ];
 }

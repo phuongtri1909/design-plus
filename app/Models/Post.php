@@ -24,7 +24,8 @@ class Post extends Model
         'approval_at',
         'get_post_at',
         'count_no_approval',
-        'post_type'
+        'post_type',
+        'send_post_at',
     ];
 
     public function user()

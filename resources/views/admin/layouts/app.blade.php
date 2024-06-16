@@ -35,10 +35,13 @@
                         @if(auth()->user()->role == '1')
                             <a href="{{ route('dashboard.index') }}" class="nav-item nav-link {{ Route::currentRouteNamed('dashboard.index') ? 'active' : '' }}"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
                             <a href="/categories" class="nav-item nav-link {{ Route::is('categories.*') ? 'active' : '' }}"><i class="fa-solid fa-list"></i>Thể loại bài viết</a>
-                            <a href="{{ route('reporter.index') }}" class="nav-item nav-link {{ Route::currentRouteNamed('reporter.index','show.user') ? 'active' : '' }}"><i class="fas fa-users"></i>Phóng viên</a>
+                            <a href="{{ route('reporter.index') }}" class="nav-item nav-link {{ Route::currentRouteNamed('reporter.index','show.user','reporter.report') ? 'active' : '' }}"><i class="fas fa-users"></i>Phóng viên</a>
+                            <a href="{{ route('list.user.approval') }}" class="nav-item nav-link {{ Route::currentRouteNamed('list.user.approval','show.user.approval') ? 'active' : '' }}"><i class="fa-solid fa-check"></i>Người duyệt bài</a>
                             <a href="{{ route('user.post.index') }}" class="nav-item nav-link {{ Route::currentRouteNamed('user.post.index','user.post.show') ? 'active' : '' }}"><i class="fa-solid fa-user-group"></i>Người lấy bài</a>
                         @elseif(auth()->user()->role == '2')
                             <a href="{{ route('dashboard.affiliate') }}" class="nav-item nav-link {{ Route::currentRouteNamed('dashboard.affiliate') ? 'active' : '' }}"><i class="fa fa-tachometer-alt me-2"></i>Quản lý lấy bài</a>
+                        @elseif(auth()->user()->role == '3')
+                            <a href="{{ route('dashboard.approver') }}" class="nav-item nav-link {{ Route::currentRouteNamed('dashboard.approver') ? 'active' : '' }}"><i class="fa fa-tachometer-alt me-2"></i>Quản lý duyệt bài</a>
                         @endif
                     </div>
                 </nav>
@@ -105,7 +108,9 @@
     </div>
     <script src="{{ asset('bootstrap/js/jquery-3.6.0.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <script src="{{ asset('js/main.js') }}"></script>
     <script src="{{ asset('lib/chart/chart.min.js') }}"></script>
     @stack('script-admin')

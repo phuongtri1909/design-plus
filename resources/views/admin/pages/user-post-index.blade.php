@@ -11,10 +11,9 @@
                                 <h4 class="title">Danh sách người lấy bài</h4>
                             </div>
                             <div class="col-md-6 col-xs-12 text-right">
-                                <div class="row">
-                                    <input type="text" id="search-reporter" class="form-control input-search col-10 ml-2" placeholder="Tìm kiếm phóng viên">
-                                    <a href="{{ route('create.user') }}" class="btn btn-default ml-2" title="Thêm tài khoản"><i class="fa-solid fa-plus"></i></a>
-                                </div>
+                              
+                                <a href="{{ route('create.user') }}" class="btn btn-default ml-2" title="Thêm tài khoản"><i class="fa-solid fa-plus"></i></a>
+                                
                             </div>
                         </div>
                     </div>
@@ -47,7 +46,7 @@
                                         
                                         </td>
                                         <td class="d-none d-md-table-cell">
-                                            <p class="my-0"><span class="font-weight-bold">Thêm    :</span>  {{ $user->created_at }}</p>
+                                            <p class="my-0"><span class="font-weight-bold">Ngày tạo    :</span>  {{ $user->created_at }}</p>
                                             <p class="my-0"><span class="font-weight-bold">Cập nhật    :</span>  {{ $user->updated_at }}</p>
                                         </td>
                                         <td>
@@ -72,10 +71,6 @@
                     </div>
                     <div class="panel-footer">
                         <div class="row">
-                            
-                            <div class="col col-sm-6 col-xs-6">
-                                Hiển thị <b>{{ $userPost->count() }}</b> trên <b>{{ $userPost->total() }}</b> thể loại
-                            </div>
                             <div class="col-sm-6 col-xs-6">
                                 <div id="pagination">
                                     {{ $userPost->links('vendor.pagination.custom') }}

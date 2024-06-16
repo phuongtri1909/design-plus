@@ -38,15 +38,12 @@
                                         <td>{{ $reporter->full_name }}</td>
                                         <td class="d-none d-md-table-cell">{{ $reporter->username }}</td>
                                         <td>
-                                            <p><span class="font-weight-bold">Chưa duyệt:</span>{{ $reporter->count_no_approval }}</p>
-                                           
-                                            <p><span class="font-weight-bold">Đã đăng:</span>{{ $reporter->count_push_post }}/{{ $reporter->count_approval }}</p>
-                                            <hr class="my-0">
-                                            <p><span class="font-weight-bold">Tổng:</span> {{ $reporter->total_posts }}</p>
-                                        
+                                            <a class="text-dark link-custom" href="{{ route('reporter.report', ['id' => $reporter->id, 'report' => 'up']) }}"><p class="m-0"><span class="font-weight-bold">Đã up lên: </span> {{ $reporter->count_send_approval }}</p></a>
+                                            <a class="text-dark link-custom" href="{{ route('reporter.report', ['id' => $reporter->id, 'report' => 'approval']) }}"><p class="my-1"><span class="font-weight-bold">Đã duyệt: </span>{{ $reporter->count_approval }}</p></a>
+                                            <a class="text-dark link-custom" href="{{ route('reporter.report', ['id' => $reporter->id, 'report' => 'post']) }}"><p class="m-0"><span class="font-weight-bold">Đã đăng: </span>{{ $reporter->count_push_post }}</p></a>
                                         </td>
                                         <td class="d-none d-md-table-cell">
-                                            <p class="my-0"><span class="font-weight-bold">Thêm    :</span>  {{ $reporter->created_at }}</p>
+                                            <p class="my-0"><span class="font-weight-bold">Ngày tạo    :</span>  {{ $reporter->created_at }}</p>
                                             <p class="my-0"><span class="font-weight-bold">Cập nhật    :</span>  {{ $reporter->updated_at }}</p>
                                         </td>
                                         <td>

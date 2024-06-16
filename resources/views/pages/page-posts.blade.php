@@ -1,5 +1,18 @@
 @extends('layouts.base')
-
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            @if (session('success'))
+                $('#messageContent').text('{{ session('success') }}');
+                $('#messageModal').modal('show');
+            @endif
+            @if (session('error'))
+                $('#messageContent').text('{{ session('error') }}');
+                $('#messageModal').modal('show');
+            @endif
+        });
+    </script>
+@endpush
 @section('content')
 <div>
     <div id="reporter">
@@ -313,15 +326,6 @@
             modalPostOkBtn.click(handleModalPrimaryBtnClick);
         });
 
-        $(document).ready(function() {
-            @if (session('success'))
-                $('#messageContent').text('{{ session('success') }}');
-                $('#messageModal').modal('show');
-            @endif
-            @if (session('error'))
-                $('#messageContent').text('{{ session('error') }}');
-                $('#messageModal').modal('show');
-            @endif
-        });
+       
     </script>
 @endpush

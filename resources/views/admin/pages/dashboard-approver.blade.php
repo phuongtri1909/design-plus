@@ -3,6 +3,7 @@
     .card {
         border-radius: 10px !important;
     }
+
     .limiter {
         width: 100%;
         margin: 0 auto;
@@ -16,7 +17,7 @@
                     <div class="panel-heading">
                         <div class="card">
                             <div class="card-body text-center">
-                                <h4 class="card-title m-b-0">Thông tin của : {{ auth()->user()->full_name }}</h4>
+                                <h4 class="card-title m-b-0">Thông tin của tôi : {{ auth()->user()->full_name }}</h4>
                             </div>
                             <div class="infomation mx-5">
                                 <p class="text-dark"><span class="font-weight-bold">Tài khoản:</span>
@@ -54,7 +55,6 @@
                                                 <tr>
                                                     <th class="text-center">Số lượng</th>
                                                     <th class="text-center">Chi tiết</th>
-                                                    <th>Xem bài</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="reporter-body">
@@ -63,6 +63,7 @@
                                         </table>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
 
@@ -91,7 +92,7 @@
         $(document).ready(function() {
             function fetchData(start, end) {
                 $.ajax({
-                    url: "{{ route('report.this.user.getPosts') }}",
+                    url: "{{ route('report.this.user.approval') }}",
                     method: 'POST',
                     data: {
                         start: start.format('YYYY-MM-DD 00:00:00'),
@@ -99,7 +100,6 @@
                         _token: "{{ csrf_token() }}"
                     },
                     success: function(results) {
-                        console.log(results);
                         if (results.error) {
                             $('#messageModal').modal('show');
                             $('#messageContent').text(results.error);
@@ -112,44 +112,17 @@
                             $row.append($("<td class='text-center'></td>").text(results.totalPosts));
 
                             var $postsCell = $("<td></td>");
-                            var $postView = $("<td></td>");
                             results.totalRecords.forEach(function(reporter) {
                                 $postsCell.append($("<p></p>").html(
                                     "<span class='font-weight-bold'>" + reporter
                                     .reporter_name +
                                     ": </span>" + reporter.count + " bài"));
-                                var modalId = "messageModal" + reporter.reporter_id;
-                                var modal = $('<div class="modal fade" id="' + modalId +
-                                    '" tabindex="-1" aria-labelledby="' + modalId +
-                                    'Label" aria-hidden="true">' +
-                                    '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">' +
-                                    '<div class="modal-content">' +
-                                    '<div class="modal-header">' +
-                                    '<h5 class="modal-title dp-color" id="' + modalId +
-                                    'Label">Thông báo</h5>' +
-                                    '</div>' +
-                                    '<div class="modal-body" id="' + modalId + 'Content">' +
-                                    '</div>' +
-                                    '</div>' +
-                                    '</div>' +
-                                    '</div>').appendTo('body');
-                                reporter.posts_links.forEach(function(link) {
-                                    $('#' + modalId + 'Content').append($('<ul></ul>')
-                                        .append($('<li></li>').html(
-                                            '<a class="text-dark link-custom" href="' +
-                                            link.link + '">' + link.title +
-                                            '</a>')));
-                                });
-                                $postView.append($(
-                                    '<p class="link-custom" data-bs-toggle="modal" data-bs-target="#' +
-                                    modalId + '"></p>').html('Xem'));
                             });
 
-
                             $row.append($postsCell);
-                            $row.append($postView);
                             $tbody.append($row);
                         }
+
                     }
                 });
             }
@@ -164,7 +137,6 @@
             var start = moment().startOf('month');
             var end = moment().endOf('month');
             fetchData(start, end);
-
         });
     </script>
 @endpush

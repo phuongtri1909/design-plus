@@ -185,10 +185,11 @@ footer{
 
 .form-post input[type="text"],select,textarea {
     text-align: center;
+    color: #000;
 }
 
 .form-post input[type="text"]:hover,textarea:hover,.btn-upload:hover{
-    background: #ffd6ea;
+    background: #d3d3d3;
     border: 1px solid #000;
 }
 
@@ -447,6 +448,9 @@ footer{
     border-radius: 50%;
     width: 50;
     height: 53px;
+}
+.link-custom:hover{
+    text-decoration: underline !important;
 }
 
   

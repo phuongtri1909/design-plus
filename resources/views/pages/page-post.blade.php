@@ -26,39 +26,44 @@
                 <h5 class="col-12 col-md-9">{{ $post->title }}</h5>
                 <div class="col-12 col-md-3 px-0" style="text-align: right;
                 padding-right: 13px !important;">
-                    @if ($post->status_approval == 0 && auth()->user()->role == 1 || auth()->user()->role == 2 && $post->status_approval == 1 || auth()->user()->role == 1)
+                    @if ($post->status_save_draft == '0' && $post->send_approval == '1')
                         <form action="{{ route('approve.handleApproveAction') }}" method="POST">
                             @csrf
                             <input type="hidden" name="post_slug" value="{{ $post->slug }}">
 
-                            @if ($post->status_approval == 0 && auth()->user()->role == 1)
-                                <button  class="btn-sm btn-primary btn-action" name="action" value="approve">PHÊ DUYỆT</button>
-                                <button class="btn-sm btn-not-achieved btn-action" name="action" value="notAchieved">KHÔNG ĐẠT</button>
-                            @elseif (auth()->user()->role == 2 && $post->status_approval == 1 )
-                                @if ($post->status_get_post == 0)
-                                    <a class="btn-sm btn-success text-decoration-none insert-link " data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="{{ $post->id }}">ĐĂNG BÀI</a>
-                                @else
-                                    @if ($post->link != null)
-                                        <a href="{{ $post->link}}" target="_blank" class="btn-sm btn-warning text-decoration-none ">ĐÃ ĐĂNG BÀI</a>
-                                    @else
-                                        <span class="btn-sm btn-warning">ĐÃ ĐĂNG BÀI</span>
-                                    @endif
-                                    
+                            @if ($post->status_approval == 0 )
+                                @if(auth()->user()->role == 1 || auth()->user()->role == 3)
+                                    <button  class="btn-sm btn-primary btn-action" name="action" value="approve">PHÊ DUYỆT</button>
+                                    <button class="btn-sm btn-not-achieved btn-action" name="action" value="notAchieved">KHÔNG ĐẠT</button>
                                 @endif
-                            @elseif (auth()->user()->role != 2 && $post->status_approval == 1 )
-                            
-                                @if ($post->status_get_post == 0)
-                                    <span class="btn-sm btn-warning d-flex">BÀI CHƯA ĐĂNG</span>
-                                @else
-                                    @if ($post->link != null)
-                                        <a href="{{ $post->link}}" target="_blank" class="btn-sm btn-warning text-decoration-none ">ĐÃ ĐĂNG BÀI</a>
+                            @endif
+
+                            @if ( $post->status_approval == 1 )
+                                @if(auth()->user()->role == 2)
+                                    @if ($post->status_get_post == 0)
+                                        <a class="btn-sm btn-success text-decoration-none insert-link " data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="{{ $post->id }}">ĐĂNG BÀI</a>
                                     @else
-                                        <span class="btn-sm btn-warning">ĐÃ ĐĂNG BÀI</span>
+                                        @if ($post->link != null)
+                                            <a href="{{ $post->link}}" target="_blank" class="btn-sm btn-warning text-decoration-none ">ĐÃ ĐĂNG BÀI</a>
+                                        @else
+                                            <span class="btn-sm btn-warning">ĐÃ ĐĂNG BÀI</span>
+                                        @endif
                                     @endif
-                                    
+                                @elseif (auth()->user()->role != 2)
+                                    @if ($post->status_get_post == 0)
+                                            <span class="btn-sm btn-warning d-flex">BÀI CHƯA ĐĂNG</span>
+                                    @else
+                                        @if ($post->link != null)
+                                            <a href="{{ $post->link}}" target="_blank" class="btn-sm btn-warning text-decoration-none ">ĐÃ ĐĂNG BÀI</a>
+                                        @else
+                                            <span class="btn-sm btn-warning">ĐÃ ĐĂNG BÀI</span>
+                                        @endif
+                                            
+                                    @endif
                                 @endif
-                            
-                            @elseif ($post->status_approval == 2)
+                            @endif
+
+                            @if ($post->status_approval == 2)
                                 <span class="btn-sm btn-danger">BÀI VIẾT KHÔNG ĐẠT</span>
                             @endif
                         </form>
@@ -67,15 +72,15 @@
             </div>
 
             <p class="fw-bold fst-italic mb-4">{{ $post->brief_intro }}</p>
-            <p class="mb-5">{{ $post->content }}</p>
+            {!! nl2br(e($post->content)) !!}
 
-            <div id="gallery" class="row" style="    border-radius: 12px;
-            background: #ece7e7;">
+            <div id="gallery" class="row" style="border-radius: 12px; background: #ece7e7;">
                 @foreach($PostImages as $image)
-                    <div class="col-md-4 col-sm-6 mb-4 gallery-item">
+                    <div class="col-md-4 col-sm-6 mb-4 gallery-item position-relative">
                         <img src="{{ asset('storage/' . $image->image) }}" class="img-fluid" alt="Image">
                     </div>
                 @endforeach
+                <button id="downloadAll" class="btn btn-secondary" data-post-id="{{ $post->id }}">Download All Images</button>
             </div>
 
             <div class="d-flex justify-content-between mb-5">
@@ -125,6 +130,19 @@
 @endsection
 @push('scripts')
     <script>
+        $(document).ready(function() {
+            $('#downloadAll').click(function() {
+                var postId = $(this).data('post-id');
+                $('#gallery .gallery-item img').each(function(index) {
+                    var link = document.createElement('a');
+                    link.href = $(this).attr('src');
+                    link.download = postId + '_image' + (index + 1) + '.jpg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            });
+        });
 
         $('body').on('click', '.insert-link', function() {
             var postId = $(this).data('post-id');
@@ -162,13 +180,7 @@
                 $('#messageContent').html(errorMessages);
                 $('#messageModal').modal('show');
             @endif
-            @if (session('success'))
-                $('#messageContent').text('{{ session('success') }}');
-                $('#messageModal').modal('show');
-            @elseif (session('error'))
-                $('#messageContent').text('{{ session('error') }}');
-                $('#messageModal').modal('show');
-            @endif
+            
         });
     </script>
 @endpush

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Category;
+use App\Models\UserApprovalPost;
 use App\Models\UserGetPost;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -118,9 +119,17 @@ class PostController extends Controller
     public function show($slug)
     {
         $user = auth()->user();
-        $postQuery = $user->role == '1' || $user->role == '2' ? Post::query() : $user->posts();
 
-        $post = $postQuery->where('slug', $slug)->first();
+        if($user->role == '0')
+        {
+            $post = $user->posts()->where('slug', $slug)->first();
+        }
+        elseif($user->role == '1' || $user->role == '3'){
+            $post = Post::where('slug', $slug)->where('status_save_draft','0')->where('send_approval','1')->first();
+        }
+        elseif($user->role == '2'){
+            $post = Post::where('slug', $slug)->where('status_save_draft','0')->where('send_approval','1')->where('status_approval','1')->first();
+        }
 
         if (!$post) {
             return back()->with('error', 'Không tìm thấy bài viết');
@@ -255,7 +264,7 @@ class PostController extends Controller
             return back()->with('error', 'Không thể chuyển duyệt bài viết, thử lại sau');
         }
         if($post && $post->status_save_draft == '0' && $post->send_approval == '0' && $post->status_approval == '0'){
-            $post->update(['send_approval' => '1']);
+            $post->update(['send_approval' => '1','send_post_at' => now()->toDateTimeString()]);
             return back()->with('success', 'Chuyển duyệt bài viết thành công');
         }
         return back()->with('error', 'Không thể chuyển duyệt bài viết, thử lại sau');
@@ -329,7 +338,7 @@ class PostController extends Controller
     }
 
     public function approve_index(){
-        $list_posts = Post::where('status_save_draft', '0')->where('send_approval', '1')->orderBy('created_at', 'desc')->paginate(30);
+        $list_posts = Post::where('status_save_draft', '0')->where('send_approval', '1')->orderBy('updated_at', 'desc')->paginate(30);
         $reporters = User::where('role', '0')->get();
         return view('pages.page-approve')->with('list_posts', $list_posts)->with('reporters', $reporters);
     }
@@ -356,14 +365,18 @@ class PostController extends Controller
             $post = Post::find($post);
             
             if($post->status_save_draft == '0' && $post->send_approval == '1' && $post->status_approval == '0'){
+                DB::beginTransaction();
                 try {
                     if($request->operation == 1){
                         $post->update(['status_approval' => '2','approval_at' => now()->toDateTimeString()]);
                     }
                     else if($request->operation == 2){
                         $post->update(['status_approval' => '1','approval_at' => now()->toDateTimeString()]);
+                        $userApprove = UserApprovalPost::create(['user_id' => auth()->id(),'post_id' => $post->id]);
                     }
+                    DB::commit();
                 } catch (\Exception $e) {
+                    DB::rollback();
                     return response()->json([
                         'error' => 'Không thể thực hiện thao tác',
                     ], 500);
@@ -401,19 +414,22 @@ class PostController extends Controller
         if (!$post) {
             return back()->withErrors(['error' => 'Bài viết không tồn tại']);
         } 
-
+        DB::beginTransaction();
         try {
-            if ($action == 'approve' && auth()->user()->role == '1'){
+            if ($action == 'approve' && auth()->user()->role == '1' || $action == 'approve' && auth()->user()->role == '3'){
                 $post->update(['status_approval' => '1','approval_at' => now()->toDateTimeString()]);
-            } elseif ($action == 'notAchieved' && auth()->user()->role == '1') {
+                $userApprove = UserApprovalPost::create(['user_id' => auth()->id(),'post_id' => $post->id]);
+            } elseif ($action == 'notAchieved' && auth()->user()->role == '1' || $action == 'notAchieved' && auth()->user()->role == '3') {
                 $post->update(['status_approval' => '2','approval_at' => now()->toDateTimeString(),'count_no_approval' => $post->count_no_approval + 1]);
             }
             else{
+                DB::rollback();
                 return back()->withErrors(['error' => 'Không thể thực hiện thao tác']);
             }
         
-           
+           DB::commit();
         } catch (\Exception $e) {
+            DB::rollback();
             return back()->withErrors(['error' => 'Có lỗi xảy ra trong quá trình xử lý']);
         }
 
