@@ -5,14 +5,14 @@
         <div class="container">
             <div class="filter mt-5 mb-5">
                 <p class="ps-1 mb-1">Bộ lọc & phân loại</p>
-                <div class="d-flex">
-                    <select class="form-select form-select-sm selected-action selected-reporter" aria-label="Small select example" name="reporter">
+                <div class="d-sm-flex">
+                    <select class="mb-2 mb-sm-0 form-select form-select-sm selected-action selected-reporter" aria-label="Small select example" name="reporter">
                         <option selected value="" disabled>Tác giả</option>
                         @foreach ($reporters as $reporter)
                             <option value="{{ $reporter->id }}">{{ $reporter->full_name }}</option>
                         @endforeach
                     </select>
-                    <select class="form-select form-select-sm selected-action selected-time" aria-label="Small select example" name="duration">
+                    <select class="mb-2 mb-sm-0 form-select form-select-sm selected-action selected-time" aria-label="Small select example" name="duration">
                         <option selected value="" disabled>Thời gian</option>
                         <option value="1">Trong tháng này</option>
                         <option value="3">3 tháng trước</option>
@@ -43,7 +43,7 @@
                 </div>
             @endif
 
-            <div class="table-approve">
+            <div class="table-approve table-responsive">
                 <table class="table">
                     <thead class="table-light">
                       <th>Danh sách bài</th>
@@ -51,6 +51,8 @@
                       <th>Tình trạng</th>
                       <th>Ngày</th>
                       <th></th>
+                      <th>Thể loạ<i></i></th>
+                      
                     </thead>
                     <tbody class="t-body-get-post">
                         @foreach ($list_posts as $post)
@@ -74,6 +76,7 @@
                                         <a href="{{ $post->link }}" target="_blank"  class="">Link bài</a><span style="color: #f26bac">|</span><a class="no-href edit-link" data-bs-toggle="modal" data-bs-target="#linkModal" data-post-id="{{ $post->id }}" data-post-link="{{ $post->link }}">Edit</a>
                                     @endif
                                 </td>
+                                <td>{{ $post->category->name }}</td>
                             </tr>
                         @endforeach
                     </tbody>

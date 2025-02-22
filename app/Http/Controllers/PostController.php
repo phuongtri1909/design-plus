@@ -99,7 +99,7 @@ class PostController extends Controller
                     $extension = $file->getClientOriginalExtension();
                     $fileName = $originalFileName . '_' . time() . '.' . $extension;
                     $file->storeAs('public/uploads/' . $folderName, $fileName);
-                    $file->move(public_path('storage/uploads/' . $folderName), $fileName);
+                   
                     $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
                 }
             }
@@ -469,6 +469,10 @@ class PostController extends Controller
         ->where('status_approval', '1')
         ->orderBy('approval_at', 'desc')
         ->paginate(20);
+
+        foreach ($list_posts as $index => $post) {
+            $post->category_name = $post->category->name;
+        }
 
         $reporters = User::where('role', '0')->get();
         return view('pages.page-get-post')->with('list_posts', $list_posts)->with('reporters', $reporters);
