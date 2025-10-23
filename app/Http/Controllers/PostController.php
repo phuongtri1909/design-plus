@@ -232,15 +232,18 @@ class PostController extends Controller
        
         if(!$post)
         {
-            return back()->with('error', ' Không thể xóa bài viết');
+            return back()->with('error', ' Thao tác xóa không đúng, thử lại sau');
         }
-        else if ($post && $post->status_save_draft == '0' && $post->send_approval == '0' && $post->status_approval == '0' && $post->status_get_post == '0' || $post->status_save_draft == '0' && $post->send_approval == '1' && $post->status_approval == '2' && $post->status_no_approval == '1') {
+        else if ($post && (
+            ($post->status_save_draft == '0' && $post->send_approval == '0' && $post->status_approval == '0' && $post->status_get_post == '0')
+            || ($post->status_save_draft == '0' && $post->send_approval == '1' && $post->status_approval == '2' && in_array($post->status_no_approval, ['0','1']))
+        )) {
             foreach ($post->postImages as $image) {
                 Storage::delete('public/' . $image->image);
             }
             $post->delete();
             return back()->with('success', 'Xóa bài viết thành công');
-        }
+        }        
         return back()->with('error', ' Không thể xóa bài viết');
     }
 
