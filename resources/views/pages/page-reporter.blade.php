@@ -124,7 +124,11 @@
                                                 ảnh cho bài viết <i class="fa-solid fa-plus"></i></a>
                                         </label>
                                         <input class="@error('file') is-invalid @enderror" type="file" name="file[]"
-                                            accept=".jpg,.png,.jpeg" id="attachment" hidden multiple />
+                                            accept=".jpg,.png,.jpeg,.gif,.webp" id="attachment" hidden multiple />
+                                        <small class="text-muted d-block mt-2">
+                                            <i class="fa-solid fa-info-circle"></i> 
+                                            Mỗi file tối đa 10MB, tối đa 10 ảnh. Định dạng: JPG, PNG, JPEG, GIF, WEBP
+                                        </small>
                                         @error('file')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -243,15 +247,64 @@
         }
 
         function handleAttachmentChange(e) {
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            const maxFiles = 10;
+            
+            // Check number of files
+            if (this.files.length > maxFiles) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Quá nhiều ảnh!',
+                    text: `Chỉ được chọn tối đa ${maxFiles} ảnh!`,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3085d6'
+                });
+                this.value = '';
+                return;
+            }
+            
+            // Check file sizes
+            for (var i = 0; i < this.files.length; i++) {
+                const file = this.files.item(i);
+                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File quá lớn!',
+                        html: `File <strong>"${file.name}"</strong> có kích thước <strong>${fileSizeMB}MB</strong> vượt quá giới hạn 10MB!`,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#d33'
+                    });
+                    this.value = '';
+                    return;
+                }
+            }
+            
             for (var i = 0; i < this.files.length; i++) {
                 let fileBloc = createFileBlock(this.files.item(i));
                 filesList.append(fileBloc);
                 dt.items.add(this.files.item(i));
             };
             this.files = dt.files;
+            
+            // Show success message
+            if (this.files.length > 0) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: `Đã chọn ${this.files.length} ảnh thành công!`,
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            }
         }
 
         function createFileBlock(file) {
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            
             let fileBloc = $('<span/>', {
                     class: 'file-block'
                 }),
@@ -260,6 +313,11 @@
                     class: 'd-none name',
                     text: file.name
                 }),
+                fileSize = $('<span/>', {
+                    class: 'file-size',
+                    text: `${fileSizeMB}MB`,
+                    style: 'font-size: 12px; color: #666; margin-left: 5px;'
+                }),
                 fileImage = $('<img/>', {
                     src: URL.createObjectURL(file),
                     class: 'image-post'
@@ -267,6 +325,7 @@
 
             div.append('<span class="file-delete"><span>+</span></span>')
                 .append(fileName)
+                .append(fileSize)
                 .append(fileImage);
 
             fileBloc.append(div);
@@ -310,14 +369,38 @@
             input[0].files = dt.files;
             $(document).on('click', '.file-delete', function() {
                 let name = $(this).next('span.name').text();
-                $(this).closest('.file-block').remove();
-                $.each(dt.items, function(i, item) {
-                    if (name === item.getAsFile().name) {
-                        dt.items.remove(i);
-                        return false;
+                
+                Swal.fire({
+                    title: 'Xác nhận xóa',
+                    text: `Bạn có chắc muốn xóa file "${name}"?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(this).closest('.file-block').remove();
+                        $.each(dt.items, function(i, item) {
+                            if (name === item.getAsFile().name) {
+                                dt.items.remove(i);
+                                return false;
+                            }
+                        });
+                        $('#attachment')[0].files = dt.files;
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Đã xóa!',
+                            text: 'File đã được xóa thành công!',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
                     }
                 });
-                $('#attachment')[0].files = dt.files;
             });
         });
 

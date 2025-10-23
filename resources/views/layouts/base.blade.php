@@ -16,7 +16,7 @@
 <body>
     <header>
         <div class="bg-header">
-            <div class="header container container-dp">
+            <div class="header container">
                 <div class="d-flex align-items-center justify-content-between">
                     <img src="{{ asset('images/logo-dp.png') }}" alt="" class="logo-dp" width="200" height="25">
                     <div class="d-none d-md-flex">
@@ -128,13 +128,13 @@
             </div>
         </div>
     </header>
-    <main class="container container-dp">
+    <main class="container">
         @yield('content')
         <a style="background: #ffd6ea" class=" text-dark btn btn-lg btn-lg-square back-to-top"><i class="fas fa-chevron-up"></i></a>
     </main>
     
     <footer class="py-5 ">
-        <div class="container container-lv2-dp">
+        <div class="container">
             <div class="row">
                 <div class="col-12 col-xxl-6 text-white d-flex flex-column align-items-center d-xxl-block">
                     <h1 class="text-white pb-3">CONTACT</h1>
@@ -167,6 +167,9 @@
     <script src="{{ asset('bootstrap/js/popper.min.js') }}"></script>
     <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     @stack('scripts')
     <script>
