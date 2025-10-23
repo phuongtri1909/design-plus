@@ -55,8 +55,11 @@
                                         </td>
                                         <td>
                                             <ul class="action-list">
-                                                <li><a href="{{ route('edit.user',$reporter->id) }}" class="edit-user" data-tip="Sửa"><i class="fa fa-edit text-info"></i></a></li>
-                                                <li><a href="#" class="delete-user" data-id="{{ $reporter->id }}" data-tip="Xóa"><i class="fa fa-trash text-danger"></i></a></li>
+
+                                                @if (auth()->user()->role == 1)
+                                                    <li><a href="{{ route('edit.user',$reporter->id) }}" class="edit-user" data-tip="Sửa"><i class="fa fa-edit text-info"></i></a></li>
+                                                    <li><a href="#" class="delete-user" data-id="{{ $reporter->id }}" data-tip="Xóa"><i class="fa fa-trash text-danger"></i></a></li>
+                                                @endif
                                                 <li class="d-md-none"><a href="{{ route('show.user',$reporter->id) }}" data-tip="Xem"><i class="fa-regular fa-eye text-success"></i></a></li>
                                             </ul>
                                         </td>

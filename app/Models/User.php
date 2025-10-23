@@ -25,6 +25,11 @@ class User extends Authenticatable
         'status',
     ];
 
+    const ROLE_PHONGVIEN = 0;
+    const ROLE_ADMIN = 1;
+    const ROLE_NGUOILAYBAI = 2;
+    const ROLE_NGUOIDUYETBAI = 3;
+
     /**
      * The attributes that should be hidden for serialization.
      *

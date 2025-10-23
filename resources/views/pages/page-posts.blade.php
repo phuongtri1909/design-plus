@@ -84,6 +84,7 @@
                                     <tr class="tr-posts">
                                         <th scope="row">{{ $index }}</th>
                                         <td class="title">{{ $post->title }}</td>
+                                        <td class="category fw-bold">{{ $post->category->name }}</td>
                                         <td >
                                             @if ($post->send_approval == 0 || $post->send_approval == 1 && $post->status_approval == 2 )
                                                 <a href="{{ route('posts.edit', ['slug'=> $post->slug]) }}">Xem & edit</a>

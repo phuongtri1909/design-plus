@@ -217,7 +217,45 @@ class PostController extends Controller
 
         $post->post_type = $postTypeMapping[$post->post_type] ?? $post->post_type;
         $PostImages = $post->postImages;
-        return view('pages.page-post')->with('post', $post)->with('PostImages', $PostImages);
+        $categories = Category::all();
+        return view('pages.page-post')->with('post', $post)->with('PostImages', $PostImages)->with('categories', $categories);
+    }
+
+    /**
+     * Update category for a post (for approvers only)
+     */
+    public function updateCategory(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Check if user is approver (role 3)
+        if ($user->role != 3) {
+            return response()->json(['error' => 'Bạn không có quyền thực hiện hành động này'], 403);
+        }
+        
+        $request->validate([
+            'post_slug' => 'required|string',
+            'category_id' => 'required|integer|exists:categories,id'
+        ]);
+        
+        $post = Post::where('slug', $request->post_slug)->first();
+        
+        if (!$post) {
+            return response()->json(['error' => 'Không tìm thấy bài viết'], 404);
+        }
+        
+        $oldCategory = $post->category->name;
+        $newCategory = Category::find($request->category_id)->name;
+        
+        $post->category_id = $request->category_id;
+        $post->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Thể loại đã được cập nhật thành công',
+            'old_category' => $oldCategory,
+            'new_category' => $newCategory
+        ]);
     }
 
     /**

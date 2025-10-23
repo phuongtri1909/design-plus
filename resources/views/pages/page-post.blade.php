@@ -19,7 +19,17 @@
             </div>
 
             <div class="d-flex justify-content-between mb-5">
-                <p class="mb-0">Thể loại: {{ $post->category->name }}</p>
+                <div class="d-flex align-items-center">
+                    <p class="mb-0 fw-bold fs-4 me-3">Thể loại: 
+                        @if(auth()->user()->role == 3)
+                            <span id="category-display" class="text-primary" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                                {{ $post->category->name }} <i class="fa-solid fa-edit ms-1"></i>
+                            </span>
+                        @else
+                            {{ $post->category->name }}
+                        @endif
+                    </p>
+                </div>
                 <p class="mb-0">Loại tin: {{ $post->post_type }}</p>
             </div>
             <div class="row mb-4">
@@ -126,6 +136,44 @@
               </div>
             </div>
         </div>
+
+        <!-- Category Edit Modal -->
+        <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title dp-color" id="categoryModalLabel">Chỉnh sửa thể loại</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="category-form">
+                        @csrf
+                        <input type="hidden" name="post_slug" value="{{ $post->slug }}">
+                        <div class="mb-3">
+                            <label for="category-select" class="form-label">Chọn thể loại mới:</label>
+                            <select class="form-select" id="category-select" name="category_id" required>
+                                <option value="">-- Chọn thể loại --</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" 
+                                        {{ $post->category_id == $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <strong>Lưu ý:</strong> Thay đổi thể loại sẽ ảnh hưởng đến phân loại bài viết.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                  <button type="button" class="btn btn-primary" id="save-category">Lưu thay đổi</button>
+                </div>
+              </div>
+            </div>
+        </div>
     </div>
 @endsection
 @push('scripts')
@@ -181,6 +229,102 @@
                 $('#messageModal').modal('show');
             @endif
             
+            // Category change functionality
+            $('#save-category').click(function() {
+                var selectedCategoryId = $('#category-select').val();
+                var selectedCategoryName = $('#category-select option:selected').text();
+                var currentCategoryName = '{{ $post->category->name }}';
+                
+                if (!selectedCategoryId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Chưa chọn thể loại!',
+                        text: 'Vui lòng chọn một thể loại mới.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return;
+                }
+                
+                if (selectedCategoryId == '{{ $post->category_id }}') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Không có thay đổi!',
+                        text: 'Thể loại hiện tại đã được chọn.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return;
+                }
+                
+                // Show confirmation with SweetAlert2
+                Swal.fire({
+                    title: 'Xác nhận thay đổi thể loại',
+                    html: `
+                        <div class="text-start">
+                            <p><strong>Thể loại hiện tại:</strong> <span class="text-primary">${currentCategoryName}</span></p>
+                            <p><strong>Thể loại mới:</strong> <span class="text-success">${selectedCategoryName}</span></p>
+                            <hr>
+                            <p class="text-muted">Bạn có chắc chắn muốn thay đổi thể loại này không?</p>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Xác nhận thay đổi',
+                    cancelButtonText: 'Hủy bỏ',
+                    width: '500px'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Đang xử lý...',
+                            text: 'Vui lòng chờ trong giây lát',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        
+                        // Submit form
+                        $.ajax({
+                            url: '{{ route("posts.updateCategory") }}',
+                            method: 'POST',
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr('content'),
+                                post_slug: '{{ $post->slug }}',
+                                category_id: selectedCategoryId
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công!',
+                                    text: 'Thể loại đã được cập nhật thành công.',
+                                    confirmButtonText: 'OK',
+                                    confirmButtonColor: '#28a745'
+                                }).then(() => {
+                                    // Update display
+                                    $('#category-display').html(selectedCategoryName + ' <i class="fa-solid fa-edit ms-1"></i>');
+                                    // Close modal
+                                    $('#categoryModal').modal('hide');
+                                    // Reload page to reflect changes
+                                    location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi!',
+                                    text: 'Có lỗi xảy ra khi cập nhật thể loại. Vui lòng thử lại.',
+                                    confirmButtonText: 'OK',
+                                    confirmButtonColor: '#d33'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
         });
     </script>
 @endpush

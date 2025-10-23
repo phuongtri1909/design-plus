@@ -62,13 +62,31 @@ class AdminController extends Controller
         if ($reporter) {
             switch ($report) {
                 case 'up':
-                    $posts = $reporter->posts()->where('status_save_draft', '0')->where('send_approval', '1')->orderBy('send_post_at', 'desc')->paginate(25);
+                    $posts = $reporter->posts()
+                        ->with('category')
+                        ->where('status_save_draft', '0')
+                        ->where('send_approval', '1')
+                        ->orderBy('send_post_at', 'desc')
+                        ->paginate(25);
                     break;
                 case 'approval':
-                    $posts = $reporter->posts()->where('status_save_draft', '0')->where('send_approval', '1')->where('status_approval', '1')->orderBy('approval_at', 'desc')->paginate(25);
+                    $posts = $reporter->posts()
+                        ->with('category')
+                        ->where('status_save_draft', '0')
+                        ->where('send_approval', '1')
+                        ->where('status_approval', '1')
+                        ->orderBy('approval_at', 'desc')
+                        ->paginate(25);
                     break;
                 case 'post':
-                    $posts = $reporter->posts()->where('status_save_draft', '0')->where('send_approval', '1')->where('status_approval', '1')->where('status_get_post', '1')->orderBy('get_post_at', 'desc')->paginate(25);
+                    $posts = $reporter->posts()
+                        ->with('category')
+                        ->where('status_save_draft', '0')
+                        ->where('send_approval', '1')
+                        ->where('status_approval', '1')
+                        ->where('status_get_post', '1')
+                        ->orderBy('get_post_at', 'desc')
+                        ->paginate(25);
                     break;
             }
             return view('admin.pages.reporter-report')->with('reporter', $reporter,)->with('posts', $posts)->with('report', $report);

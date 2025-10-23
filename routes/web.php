@@ -36,7 +36,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/file/{path}', [FileController::class,'show'])->where('path', '.*');
     Route::post('classify',[PostController::class,'classify']);
     
-    Route::group(['middleware' => ['active','roleReporter']], function () {
+    Route::group(['middleware' => ['active','role:0']], function () {
         Route::post('drafts', [DraftController::class, 'store']);
         Route::get('drafts', function () {
             abort(404);
@@ -62,27 +62,33 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('report-this-user-get-posts',[AdminController::class,'report_this_user_get_posts'])->name('report.this.user.getPosts');
     });
 
-    Route::group(['middleware' => 'roleAdminApprover'], function () {
+    // Routes for Admin and Approver (role 1, 3)
+    Route::group(['middleware' => 'role:1,3'], function () {
         Route::get('approve',[PostController::class,'approve_index'])->name('approve.index');
         Route::post('approve_list',[PostController::class,'approve_list'])->name('approve.list');
         Route::post('approve_classify',[PostController::class,'approve_classify'])->name('approve.classify');
         Route::post('handleApproveAction',[PostController::class,'handleApproveAction'])->name('approve.handleApproveAction');
+        Route::post('posts/update-category',[PostController::class,'updateCategory'])->name('posts.updateCategory');
     });
 
-    Route::group(['middleware' => 'roleApprover'], function () {
+    // Routes for Approver only (role 3)
+    Route::group(['middleware' => 'role:3'], function () {
         Route::get('dashboard/approver',[AdminController::class,'indexApprover'])->name('dashboard.approver');
         Route::post('report-this-user-approval',[AdminController::class,'report_this_user_approval'])->name('report.this.user.approval');
     });
-   
-    Route::group(['middleware' => 'admin'], function () {
 
+    Route::group(['middleware' => 'role:1,2,3'], function () {
+        Route::get('reporter',[AdminController::class,'reporter_index'])->name('reporter.index');
+        Route::get('reporter-report/{id}/{report}',[AdminController::class,'reporter_report'])->name('reporter.report');
+
+    });
+    // Routes for Admin only (role 1)
+    Route::group(['middleware' => 'role:1'], function () {
         Route::get('dashboard',[AdminController::class,'index'])->name('dashboard.index');
 
         Route::resource('categories', CategoryController::class);
         Route::get('search',[CategoryController::class,'search'])->name('categories.search');
 
-        Route::get('reporter',[AdminController::class,'reporter_index'])->name('reporter.index');
-        Route::get('reporter-report/{id}/{report}',[AdminController::class,'reporter_report'])->name('reporter.report');
         Route::get('create-user',[AdminController::class,'create_user'])->name('create.user');
         Route::post('create-user',[AdminController::class,'store_user'])->name('store.user');
         Route::get('edit-user/{id}',[AdminController::class,'edit_user'])->name('edit.user');
@@ -98,6 +104,5 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::post('report-user-get-posts',[AdminController::class,'report_user_get_posts'])->name('report.user.getPosts');
         Route::post('report-user-approval',[AdminController::class,'report_user_approval'])->name('report.user.approval');
-    
     });
 });
