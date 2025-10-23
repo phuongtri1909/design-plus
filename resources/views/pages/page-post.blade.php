@@ -77,7 +77,7 @@
             <div id="gallery" class="row" style="border-radius: 12px; background: #ece7e7;">
                 @foreach($PostImages as $image)
                     <div class="col-md-4 col-sm-6 mb-4 gallery-item position-relative">
-                        <img src="{{ asset('storage/' . $image->image) }}" class="img-fluid" alt="Image">
+                        <img src="{{ Storage::url($image->image) }}" class="img-fluid" alt="Image">
                     </div>
                 @endforeach
                 <button id="downloadAll" class="btn btn-secondary" data-post-id="{{ $post->id }}">Download All Images</button>

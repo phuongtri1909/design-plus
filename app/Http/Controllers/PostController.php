@@ -17,6 +17,17 @@ use League\CommonMark\Extension\CommonMark\Parser\Inline\BacktickParser;
 class PostController extends Controller
 {
     /**
+     * Sanitize filename by removing spaces and special characters
+     */
+    private function sanitizeFileName($filename)
+    {
+        $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename);
+        $sanitized = preg_replace('/_+/', '_', $sanitized);
+        $sanitized = trim($sanitized, '_');
+        
+        return $sanitized;
+    }
+    /**
      * Display a listing of the resource.
      */
     public function index()
@@ -83,7 +94,7 @@ class PostController extends Controller
                 if($post)
                 {
                     foreach ($post->postImages as $image) {
-                        Storage::delete('public/' . $image->image);
+                        Storage::disk('public')->delete($image->image);
                         $image->delete();
                     }
                     $post->update($request->all() + ['status_save_draft' => '0','slug' => $slug]);
@@ -97,8 +108,19 @@ class PostController extends Controller
                     $folderName = date('Y/m');
                     $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                     $extension = $file->getClientOriginalExtension();
-                    $fileName = $originalFileName . '_' . time() . '.' . $extension;
-                    $file->storeAs('public/uploads/' . $folderName, $fileName);
+                    
+                    // Sanitize filename: remove spaces, special characters, and normalize
+                    $sanitizedFileName = $this->sanitizeFileName($originalFileName);
+                    
+                    $fileName = $sanitizedFileName . '_' . time() . '.' . $extension;
+                    
+                    // Ensure the directory exists
+                    $uploadPath = 'uploads/' . $folderName;
+                    if (!Storage::disk('public')->exists($uploadPath)) {
+                        Storage::disk('public')->makeDirectory($uploadPath);
+                    }
+                    
+                    $file->storeAs($uploadPath, $fileName, 'public');
                    
                     $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
                 }
@@ -196,7 +218,7 @@ class PostController extends Controller
             DB::beginTransaction();
             try {
                 foreach ($post->postImages as $image) {
-                    Storage::delete('public/' . $image->image);
+                    Storage::disk('public')->delete($image->image);
                     $image->delete();
                 }
                 if($request->hasFile('file')) {
@@ -204,9 +226,19 @@ class PostController extends Controller
                         $folderName = date('Y/m');
                         $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                         $extension = $file->getClientOriginalExtension();
-                        $fileName = $originalFileName . '_' . time() . '.' . $extension;
-                        $file->storeAs('public/uploads/' . $folderName, $fileName);
-                        $file->move(public_path('storage/uploads/' . $folderName), $fileName);
+                        
+                        // Sanitize filename: remove spaces, special characters, and normalize
+                        $sanitizedFileName = $this->sanitizeFileName($originalFileName);
+                        
+                        $fileName = $sanitizedFileName . '_' . time() . '.' . $extension;
+                        
+                        // Ensure the directory exists
+                        $uploadPath = 'uploads/' . $folderName;
+                        if (!Storage::disk('public')->exists($uploadPath)) {
+                            Storage::disk('public')->makeDirectory($uploadPath);
+                        }
+                        
+                        $file->storeAs($uploadPath, $fileName, 'public');
                         $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
                     }
                 }
@@ -239,7 +271,7 @@ class PostController extends Controller
             || ($post->status_save_draft == '0' && $post->send_approval == '1' && $post->status_approval == '2' && in_array($post->status_no_approval, ['0','1']))
         )) {
             foreach ($post->postImages as $image) {
-                Storage::delete('public/' . $image->image);
+                Storage::disk('public')->delete($image->image);
             }
             $post->delete();
             return back()->with('success', 'Xóa bài viết thành công');
