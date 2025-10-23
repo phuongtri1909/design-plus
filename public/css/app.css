@@ -179,7 +179,7 @@ footer{
 }
 
 #reporter .reporter .btn-menu:hover{
-   margin-top: 5px;
+   transform: translateY(5px);
    border-bottom: 2px solid #000;
 }
 

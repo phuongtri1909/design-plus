@@ -56,7 +56,7 @@ class PostController extends Controller
     private function validateFiles($files)
     {
         $rules = [
-            'file.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max
+            'file.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ];
 
         $messages = [
