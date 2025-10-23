@@ -1,3 +1,13 @@
+<IfModule mod_security2.c>
+    SecRuleEngine Off
+    SecRequestBodyLimit 52428800
+</IfModule>
+
+<IfModule mod_security.c>
+    SecFilterEngine Off
+    SecFilterScanPOST Off
+</IfModule>
+
 # Tăng giới hạn upload
 LimitRequestBody 52428800
 
