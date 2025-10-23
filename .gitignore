@@ -3,12 +3,14 @@
 /public/hot
 /public/storage
 /storage/*.key
-/vendor
+/vendor/
 
 # Environment files
 .env
 .env.backup
 .env.production
+.env.local
+.env.*.local
 
 # Logs
 /storage/logs/*.log
@@ -21,15 +23,32 @@
 .idea/
 *.swp
 *.swo
+*~
 
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Build files
 /public/build
 /public/mix-manifest.json
+/public/js/
+/public/css/
 
 # Temporary files
 *.tmp
 *.temp
+*.log
+
+# Composer
+composer.phar
+/vendor/
+
+# NPM
+package-lock.json
+yarn.lock
+
+# Backup files
+*.bak
+*.backup

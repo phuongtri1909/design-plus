@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use League\CommonMark\Extension\CommonMark\Parser\Inline\BacktickParser;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class PostController extends Controller
 {
@@ -26,6 +27,46 @@ class PostController extends Controller
         $sanitized = trim($sanitized, '_');
         
         return $sanitized;
+    }
+
+    /**
+     * Optimize image to reduce file size
+     */
+    private function optimizeImage($file, $outputPath, $maxWidth = 1920, $quality = 85)
+    {
+        $image = Image::make($file);
+        
+        // Resize if width is larger than maxWidth
+        if ($image->width() > $maxWidth) {
+            $image->resize($maxWidth, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+        }
+        
+        // Optimize and save
+        $image->save($outputPath, $quality);
+        
+        return $image;
+    }
+
+    /**
+     * Validate uploaded files
+     */
+    private function validateFiles($files)
+    {
+        $rules = [
+            'file.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max
+        ];
+
+        $messages = [
+            'file.*.required' => 'Vui lòng chọn ít nhất một file ảnh.',
+            'file.*.image' => 'File phải là định dạng ảnh hợp lệ.',
+            'file.*.mimes' => 'File phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'file.*.max' => 'Kích thước file không được vượt quá 10MB.',
+        ];
+
+        return Validator::make(['file' => $files], $rules, $messages);
     }
     /**
      * Display a listing of the resource.
@@ -52,17 +93,25 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
+        // Validate files first with detailed validation
+        if ($request->hasFile('file')) {
+            $fileValidator = $this->validateFiles($request->file('file'));
+            if ($fileValidator->fails()) {
+                return back()->withErrors($fileValidator)->withInput();
+            }
+        }
+
         $request->validate([
-            'title'         => 'required|string',
+            'title'         => 'required|string|max:255',
             'post_type'     => 'required|in:new,translation',
             'category_id'   => 'required|integer|exists:categories,id',
-            'brief_intro'   => 'required|string',
+            'brief_intro'   => 'required|string|max:500',
             'content'       => 'required|string',
-            "file"          => "required|array",
-            "file.*"        => "image|mimes:jpeg,png,jpg",
+            "file"          => "required|array|min:1|max:10", // Max 10 files
         ],[
             'title.required'        => 'Tựa đề không được để trống',
             'title.string'          => 'Tựa đề phải là chuỗi ký tự',
+            'title.max'             => 'Tựa đề không được vượt quá 255 ký tự',
             'post_type.required'    => 'Loại tin không được để trống',
             'post_type.in'          => 'Loại bài viết không hợp lệ',
             'category_id.required'  => 'Bạn chưa chọn thể loại',
@@ -70,11 +119,13 @@ class PostController extends Controller
             'category_id.exists'    => 'Thể loại không tồn tại',
             'brief_intro.required'  => 'Mô tả ngắn không được để trống',
             'brief_intro.string'    => 'Mô tả ngắn phải là chuỗi ký tự',
+            'brief_intro.max'       => 'Mô tả ngắn không được vượt quá 500 ký tự',
             'content.required'      => 'Nội dung không được để trống',
-            'content.string'        => 'Nội dung phải là chuỗi ký',
+            'content.string'        => 'Nội dung phải là chuỗi ký tự',
             'file.required'         => 'Ảnh không được để trống',
-            'file.*.image'          => 'File không đúng định dạng ảnh',
-            'file.*.mimes'          => 'File không đúng định dạng ảnh',
+            'file.array'            => 'File phải là mảng',
+            'file.min'              => 'Phải chọn ít nhất 1 ảnh',
+            'file.max'              => 'Không được chọn quá 10 ảnh',
         ]);
 
         DB::beginTransaction();
@@ -120,7 +171,9 @@ class PostController extends Controller
                         Storage::disk('public')->makeDirectory($uploadPath);
                     }
                     
-                    $file->storeAs($uploadPath, $fileName, 'public');
+                    // Optimize image before saving
+                    $fullPath = storage_path('app/public/' . $uploadPath . '/' . $fileName);
+                    $this->optimizeImage($file, $fullPath);
                    
                     $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
                 }
@@ -186,17 +239,25 @@ class PostController extends Controller
      */
     public function update(Request $request,$slug)
     {   
+        // Validate files first with detailed validation
+        if ($request->hasFile('file')) {
+            $fileValidator = $this->validateFiles($request->file('file'));
+            if ($fileValidator->fails()) {
+                return back()->withErrors($fileValidator)->withInput();
+            }
+        }
+
         $request->validate([
-            'title' => 'required|string',
+            'title' => 'required|string|max:255',
             'post_type' => 'required|in:new,translation',
             'category_id' => 'required|integer|exists:categories,id',
-            'brief_intro' => 'required|string',
+            'brief_intro' => 'required|string|max:500',
             'content' => 'required|string',
-            "file" => "required|array",
-            "file.*" => "image|mimes:jpeg,png,jpg",
+            "file" => "required|array|min:1|max:10", // Max 10 files
         ],[
             'title.required' => 'Tựa đề không được để trống',
             'title.string' => 'Tựa đề phải là chuỗi ký tự',
+            'title.max' => 'Tựa đề không được vượt quá 255 ký tự',
             'post_type.required' => 'Loại tin không được để trống',
             'post_type.in' => 'Loại tin không hợp lệ',
             'category_id.required' => 'Bạn chưa chọn thể loại',
@@ -204,11 +265,13 @@ class PostController extends Controller
             'category_id.exists' => 'Thể loại không tồn tại',
             'brief_intro.required' => 'Mô tả ngắn không được để trống',
             'brief_intro.string' => 'Mô tả ngắn phải là chuỗi ký tự',
+            'brief_intro.max' => 'Mô tả ngắn không được vượt quá 500 ký tự',
             'content.required' => 'Nội dung không được để trống',
-            'content.string' => 'Nội dung phải là chuỗi ký',
+            'content.string' => 'Nội dung phải là chuỗi ký tự',
             'file.required' => 'Ảnh không được để trống',
-            'file.*.image' => 'File không đúng định dạng ảnh',
-            'file.*.mimes' => 'File không đúng định dạng ảnh',
+            'file.array' => 'File phải là mảng',
+            'file.min' => 'Phải chọn ít nhất 1 ảnh',
+            'file.max' => 'Không được chọn quá 10 ảnh',
         ]);
         $user = auth()->user();
         $post = $user->posts()->where('slug', $slug)->first();
@@ -238,7 +301,9 @@ class PostController extends Controller
                             Storage::disk('public')->makeDirectory($uploadPath);
                         }
                         
-                        $file->storeAs($uploadPath, $fileName, 'public');
+                        // Optimize image before saving
+                        $fullPath = storage_path('app/public/' . $uploadPath . '/' . $fileName);
+                        $this->optimizeImage($file, $fullPath);
                         $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
                     }
                 }
