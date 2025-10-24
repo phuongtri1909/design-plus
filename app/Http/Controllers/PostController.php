@@ -30,21 +30,87 @@ class PostController extends Controller
     }
 
     /**
+     * Transliterate special Unicode characters to ASCII
+     */
+    private function transliterate($text)
+    {
+        $normalized = normalizer_normalize($text, \Normalizer::FORM_KD);
+        
+        $transliterationMap = [
+            'à' => 'a', 'á' => 'a', 'ạ' => 'a', 'ả' => 'a', 'ã' => 'a',
+            'â' => 'a', 'ầ' => 'a', 'ấ' => 'a', 'ậ' => 'a', 'ẩ' => 'a', 'ẫ' => 'a',
+            'ă' => 'a', 'ằ' => 'a', 'ắ' => 'a', 'ặ' => 'a', 'ẳ' => 'a', 'ẵ' => 'a',
+            'è' => 'e', 'é' => 'e', 'ẹ' => 'e', 'ẻ' => 'e', 'ẽ' => 'e',
+            'ê' => 'e', 'ề' => 'e', 'ế' => 'e', 'ệ' => 'e', 'ể' => 'e', 'ễ' => 'e',
+            'ì' => 'i', 'í' => 'i', 'ị' => 'i', 'ỉ' => 'i', 'ĩ' => 'i',
+            'ò' => 'o', 'ó' => 'o', 'ọ' => 'o', 'ỏ' => 'o', 'õ' => 'o',
+            'ô' => 'o', 'ồ' => 'o', 'ố' => 'o', 'ộ' => 'o', 'ổ' => 'o', 'ỗ' => 'o',
+            'ơ' => 'o', 'ờ' => 'o', 'ớ' => 'o', 'ợ' => 'o', 'ở' => 'o', 'ỡ' => 'o',
+            'ù' => 'u', 'ú' => 'u', 'ụ' => 'u', 'ủ' => 'u', 'ũ' => 'u',
+            'ư' => 'u', 'ừ' => 'u', 'ứ' => 'u', 'ự' => 'u', 'ử' => 'u', 'ữ' => 'u',
+            'ỳ' => 'y', 'ý' => 'y', 'ỵ' => 'y', 'ỷ' => 'y', 'ỹ' => 'y',
+            'đ' => 'd',
+            'À' => 'A', 'Á' => 'A', 'Ạ' => 'A', 'Ả' => 'A', 'Ã' => 'A',
+            'Â' => 'A', 'Ầ' => 'A', 'Ấ' => 'A', 'Ậ' => 'A', 'Ẩ' => 'A', 'Ẫ' => 'A',
+            'Ă' => 'A', 'Ằ' => 'A', 'Ắ' => 'A', 'Ặ' => 'A', 'Ẳ' => 'A', 'Ẵ' => 'A',
+            'È' => 'E', 'É' => 'E', 'Ẹ' => 'E', 'Ẻ' => 'E', 'Ẽ' => 'E',
+            'Ê' => 'E', 'Ề' => 'E', 'Ế' => 'E', 'Ệ' => 'E', 'Ể' => 'E', 'Ễ' => 'E',
+            'Ì' => 'I', 'Í' => 'I', 'Ị' => 'I', 'Ỉ' => 'I', 'Ĩ' => 'I',
+            'Ò' => 'O', 'Ó' => 'O', 'Ọ' => 'O', 'Ỏ' => 'O', 'Õ' => 'O',
+            'Ô' => 'O', 'Ồ' => 'O', 'Ố' => 'O', 'Ộ' => 'O', 'Ổ' => 'O', 'Ỗ' => 'O',
+            'Ơ' => 'O', 'Ờ' => 'O', 'Ớ' => 'O', 'Ợ' => 'O', 'Ở' => 'O', 'Ỡ' => 'O',
+            'Ù' => 'U', 'Ú' => 'U', 'Ụ' => 'U', 'Ủ' => 'U', 'Ũ' => 'U',
+            'Ư' => 'U', 'Ừ' => 'U', 'Ứ' => 'U', 'Ự' => 'U', 'Ử' => 'U', 'Ữ' => 'U',
+            'Ỳ' => 'Y', 'Ý' => 'Y', 'Ỵ' => 'Y', 'Ỷ' => 'Y', 'Ỹ' => 'Y',
+            'Đ' => 'D',
+        ];
+        
+        $result = strtr($normalized, $transliterationMap);
+        
+        $result = preg_replace('/[^\x20-\x7E]/', '', $result);
+        
+        return trim($result);
+    }
+
+    /**
+     * Generate slug from title, handling special characters
+     */
+    private function generateSlug($title)
+    {
+        $slug = Str::slug($title);
+        
+        if (empty($slug)) {
+            $transliterated = $this->transliterate($title);
+            if (!empty($transliterated)) {
+                $slug = Str::slug($transliterated);
+            }
+        }
+        
+        if (empty($slug)) {
+            $cleanTitle = preg_replace('/[^\p{L}\p{N}\s\-_]/u', '', $title);
+            $cleanTitle = trim($cleanTitle);
+            
+            if (!empty($cleanTitle)) {
+                $slug = Str::slug($cleanTitle);
+            }
+        }
+        
+        return $slug;
+    }
+
+    /**
      * Optimize image to reduce file size
      */
     private function optimizeImage($file, $outputPath, $maxWidth = 1920, $quality = 85)
     {
         $image = Image::make($file);
         
-        // Resize if width is larger than maxWidth
         if ($image->width() > $maxWidth) {
             $image->resize($maxWidth, null, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             });
         }
-        
-        // Optimize and save
         $image->save($outputPath, $quality);
         
         return $image;
@@ -133,7 +199,12 @@ class PostController extends Controller
             $user = auth()->user();
             $post_draft = $user->draft()->first();
 
-            $slug = Str::slug($request->title);
+            $slug = $this->generateSlug($request->title);
+            
+            if (empty($slug)) {
+                $slug = 'post-' . time();
+            }
+            
             $originalSlug = $slug;
             $count = 1;
             while (Post::query()->where('slug', $slug)->exists()) {
@@ -269,6 +340,23 @@ class PostController extends Controller
         if(!$post){
             return back()->with('error', 'Không tìm thấy bài viết');
         }
+        
+        if (empty($post->slug)) {
+            $newSlug = $this->generateSlug($post->title);
+            if (empty($newSlug)) {
+                $newSlug = 'post-' . $post->id;
+            }
+            
+            $originalSlug = $newSlug;
+            $count = 1;
+            while (Post::query()->where('slug', $newSlug)->where('id', '!=', $post->id)->exists()) {
+                $newSlug = "{$originalSlug}-" . $count++;
+            }
+            
+            $post->slug = $newSlug;
+            $post->save();
+        }
+        
         return view('pages.page-edit-post')->with('post', $post)->with('categorys', $categorys);
     }
 
@@ -318,6 +406,17 @@ class PostController extends Controller
         }else if($post->status_save_draft == 0 && $post->send_approval == 0 || $post->status_save_draft == 0 && $post->send_approval == 1 && $post->status_approval == 2){
             DB::beginTransaction();
             try {
+                $newSlug = $this->generateSlug($request->title);
+                if (empty($newSlug)) {
+                    $newSlug = 'post-' . time();
+                }
+                
+                $originalSlug = $newSlug;
+                $count = 1;
+                while (Post::query()->where('slug', $newSlug)->where('id', '!=', $post->id)->exists()) {
+                    $newSlug = "{$originalSlug}-" . $count++;
+                }
+                
                 foreach ($post->postImages as $image) {
                     Storage::disk('public')->delete($image->image);
                     $image->delete();
@@ -328,25 +427,28 @@ class PostController extends Controller
                         $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                         $extension = $file->getClientOriginalExtension();
                         
-                        // Sanitize filename: remove spaces, special characters, and normalize
                         $sanitizedFileName = $this->sanitizeFileName($originalFileName);
                         
                         $fileName = $sanitizedFileName . '_' . time() . '.' . $extension;
                         
-                        // Ensure the directory exists
                         $uploadPath = 'uploads/' . $folderName;
                         if (!Storage::disk('public')->exists($uploadPath)) {
                             Storage::disk('public')->makeDirectory($uploadPath);
                         }
                         
-                        // Optimize image before saving
                         $fullPath = storage_path('app/public/' . $uploadPath . '/' . $fileName);
                         $this->optimizeImage($file, $fullPath);
                         $post->postImages()->create(['image' => 'uploads/' . $folderName . '/' . $fileName]);
                     }
                 }
-                $post->update($request->all());
+                $post->update($request->all() + ['slug' => $newSlug]);
                 DB::commit();
+                
+                // If slug changed, redirect to new edit URL
+                if ($newSlug !== $slug) {
+                    return redirect()->route('posts.edit', ['slug' => $newSlug])->with('success', 'Cập nhật bài viết thành công');
+                }
+                
                 return back()->with('success', 'Cập nhật bài viết thành công');
             } catch (\Exception $e) {
                 DB::rollback();
